@@ -399,6 +399,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
     required Color color,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -407,10 +408,11 @@ class _ERPlusShellState extends State<ERPlusShell> {
           width: 140,
           height: 140,
           decoration: BoxDecoration(
-            color: Colors.white,
+            // İçerik alanı ile aynı arkaplan
+            color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.black.withOpacity(0.06),
+              color: theme.dividerColor,
               width: 0.5,
             ),
             boxShadow: [
@@ -425,13 +427,14 @@ class _ERPlusShellState extends State<ERPlusShell> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 56,
-                height: 56,
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(14),
+                  // İkon arkaplanı da içerik alanı ile aynı
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(icon, size: 28, color: color),
+                child: Icon(icon, size: 34, color: color),
               ),
               const SizedBox(height: 12),
               Text(
@@ -882,17 +885,17 @@ class _ERPlusShellState extends State<ERPlusShell> {
               children: [
                 // Icon container
                 Container(
-                  width: 32,
-                  height: 32,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: selected
                         ? const Color(0xFF38BDF8).withOpacity(0.15)
                         : Colors.white.withOpacity(0.03),
-                    borderRadius: BorderRadius.circular(7),
+                    borderRadius: BorderRadius.circular(9),
                   ),
                   child: Icon(
                     item.icon,
-                    size: 18,
+                    size: 20,
                     color: selected
                         ? const Color(0xFF38BDF8)
                         : Colors.white.withOpacity(0.7),
