@@ -1,747 +1,742 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'dart:ui';
+import 'package:flutter/services.dart';
 import '../../widgets/toast_notification.dart';
 
-/// Premium tab meta
-class _PremiumTabInfo {
-  final IconData icon;
-  final String label;
-  final Color color;
-  const _PremiumTabInfo(this.icon, this.label, this.color);
-}
-
-/// 🔹 Ultra Premium Apple-style Cari Hesap Kartı
-class CustomerCardView extends StatefulWidget {
+/// SAP-style Professional Customer Card with Tab Navigation
+class CustomerCardPage extends StatefulWidget {
   final VoidCallback onClose;
+  final String? customerId;
 
-  const CustomerCardView({super.key, required this.onClose});
+  const CustomerCardPage({super.key, required this.onClose, this.customerId});
 
   @override
-  State<CustomerCardView> createState() => _CustomerCardViewState();
+  State<CustomerCardPage> createState() => _CustomerCardPageState();
 }
 
-class _CustomerCardViewState extends State<CustomerCardView>
+class _CustomerCardPageState extends State<CustomerCardPage>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   late TabController _tabController;
-  final _scrollController = ScrollController();
-  bool _isScrolled = false;
 
-  /// Sekmelerin ikon + başlık + renk bilgisi
-  static const List<_PremiumTabInfo> _tabsMeta = [
-    _PremiumTabInfo(
-      CupertinoIcons.person_circle_fill,
-      'Genel',
-      Color(0xFF007AFF),
-    ),
-    _PremiumTabInfo(CupertinoIcons.doc_text_fill, 'Vergi', Color(0xFFFF9500)),
-    _PremiumTabInfo(
-      CupertinoIcons.phone_circle_fill,
-      'İletişim',
-      Color(0xFF34C759),
-    ),
-    _PremiumTabInfo(
-      CupertinoIcons.location_circle_fill,
-      'Adres',
-      Color(0xFFFF3B30),
-    ),
-    _PremiumTabInfo(
-      CupertinoIcons.creditcard_fill,
-      'Finansal',
-      Color(0xFF5856D6),
-    ),
-    _PremiumTabInfo(
-      CupertinoIcons.chart_bar_circle_fill,
-      'Muhasebe',
-      Color(0xFFAF52DE),
-    ),
-  ];
+  // Tax office data (Maliye Bakanlığı Vergi Dairesi Kodları)
+  final Map<String, String> _taxOfficeData = {
+    '01101': 'Adana Vergi Dairesi Başkanlığı',
+    '01102': 'Seyhan Vergi Dairesi',
+    '01103': 'Çukurova Vergi Dairesi',
+    '06101': 'Ankara Vergi Dairesi Başkanlığı',
+    '06102': 'Çankaya Vergi Dairesi',
+    '06103': 'Yenimahalle Vergi Dairesi',
+    '34101': 'İstanbul Vergi Dairesi Başkanlığı',
+    '34102': 'Kadıköy Vergi Dairesi',
+    '34103': 'Beşiktaş Vergi Dairesi',
+    '34104': 'Şişli Vergi Dairesi',
+    '34105': 'Beyoğlu Vergi Dairesi',
+    '35101': 'İzmir Vergi Dairesi Başkanlığı',
+    '35102': 'Konak Vergi Dairesi',
+    '35103': 'Karşıyaka Vergi Dairesi',
+  };
 
-  // FocusNodes
-  final _nameFocus = FocusNode();
-  final _name2Focus = FocusNode();
-  final _firstNameFocus = FocusNode();
-  final _lastNameFocus = FocusNode();
-  final _taxNoFocus = FocusNode();
-  final _taxOfficeFocus = FocusNode();
-  final _taxCodeFocus = FocusNode();
-  final _identityNoFocus = FocusNode();
-  final _mersisNoFocus = FocusNode();
-  final _kepFocus = FocusNode();
-  final _phoneFocus = FocusNode();
-  final _mobileFocus = FocusNode();
-  final _faxFocus = FocusNode();
-  final _emailFocus = FocusNode();
-  final _email2Focus = FocusNode();
-  final _websiteFocus = FocusNode();
-  final _cityFocus = FocusNode();
-  final _districtFocus = FocusNode();
-  final _addressFocus = FocusNode();
-  final _postalCodeFocus = FocusNode();
-  final _priceListFocus = FocusNode();
-  final _discountFocus = FocusNode();
-  final _paymentTermFocus = FocusNode();
-  final _creditLimitFocus = FocusNode();
-  final _riskLimitFocus = FocusNode();
-  final _creditDaysFocus = FocusNode();
-  final _ibanFocus = FocusNode();
-  final _bankNameFocus = FocusNode();
-  final _bankBranchFocus = FocusNode();
-  final _bankAccountFocus = FocusNode();
-  final _accountCodeFocus = FocusNode();
-  final _costCenterFocus = FocusNode();
-  final _projectCodeFocus = FocusNode();
-  final _salesPersonFocus = FocusNode();
-  final _regionFocus = FocusNode();
+  // Müşteri/Tedarikçi kodları için sayaçlar
+  static int _customerCounter = 1;
+  static int _supplierCounter = 1;
+  static int _bothCounter = 1;
 
-  // Controllers
-  final _codeController = TextEditingController(text: '120.001.0001');
+  // Basic controllers
+  final _codeController = TextEditingController();
+  final _taxOfficeCodeController = TextEditingController();
   final _nameController = TextEditingController();
-  final _name2Controller = TextEditingController();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _taxNoController = TextEditingController();
-  final _taxOfficeController = TextEditingController();
-  final _taxCodeController = TextEditingController();
-  final _identityNoController = TextEditingController();
-  final _mersisNoController = TextEditingController();
-  final _kepAddressController = TextEditingController();
   final _phoneController = TextEditingController();
   final _mobileController = TextEditingController();
   final _faxController = TextEditingController();
   final _emailController = TextEditingController();
-  final _email2Controller = TextEditingController();
   final _websiteController = TextEditingController();
-  final _countryController = TextEditingController(text: 'TR');
+  final _addressController = TextEditingController();
   final _cityController = TextEditingController();
   final _districtController = TextEditingController();
-  final _addressController = TextEditingController();
   final _postalCodeController = TextEditingController();
-  final _priceListController = TextEditingController();
-  final _discountRateController = TextEditingController(text: '0.00');
-  final _paymentTermController = TextEditingController(text: '0');
-  final _creditLimitController = TextEditingController(text: '0.00');
-  final _riskLimitController = TextEditingController(text: '0.00');
-  final _creditDaysController = TextEditingController(text: '0');
-  final _accountCodeController = TextEditingController();
-  final _costCenterController = TextEditingController();
-  final _projectCodeController = TextEditingController();
-  final _salesPersonController = TextEditingController();
-  final _regionController = TextEditingController();
+  final _countryController = TextEditingController(text: 'Türkiye');
+  final _taxNoController = TextEditingController();
+  final _taxOfficeController = TextEditingController();
+  final _identityNoController = TextEditingController();
   final _ibanController = TextEditingController();
   final _bankNameController = TextEditingController();
-  final _bankBranchController = TextEditingController();
-  final _bankAccountNoController = TextEditingController();
+  final _creditLimitController = TextEditingController(text: '0.00');
+  final _paymentTermController = TextEditingController(text: '0');
+  final _discountRateController = TextEditingController(text: '0.00');
 
-  String _customerType = 'Bireysel';
-  String _accountCategory = 'Müşteri';
-  String _branch = 'Ankara';
+  // SAP Extended Fields
+  final _shortNameController = TextEditingController();
+  final _searchTermController = TextEditingController();
+  final _industryCodeController = TextEditingController();
+  final _contactPersonController = TextEditingController();
+  final _mobile2Controller = TextEditingController();
+  final _phone2Controller = TextEditingController();
+  final _deliveryNotesController = TextEditingController();
+  final _internalNotesController = TextEditingController();
+  final _vatNoController = TextEditingController();
+  final _tradeRegisterController = TextEditingController();
+  final _chamberController = TextEditingController();
+  final _routeController = TextEditingController();
+  final _territoryController = TextEditingController();
+  final _priceGroupController = TextEditingController();
+  final _customerClassController = TextEditingController();
+
+  String _accountGroup = 'Müşteri';
+  String _companyCode = '1000';
+  String _status = 'Aktif';
   String _currency = 'TRY';
-  String _taxStatus = 'Tam Mükellef';
-  String _accountingType = 'Ticari';
-  bool _isActive = true;
-  bool _isEInvoice = false;
-  bool _isEArchive = false;
+  String _customerType = 'Perakende'; // Perakende, Kurumsal, Kamu
+  String _salesOrg = '1000'; // Satış Organizasyonu
+  String _distributionChannel = '10'; // Dağıtım Kanalı
+  String _division = '00'; // Bölüm
+  String _priceList = 'Standart'; // Fiyat Listesi
+  String _paymentMethod = 'Havale'; // Ödeme Yöntemi
+  String _incoterms = 'EXW'; // Teslim Şartları
+  String _shippingCondition = 'Standart'; // Sevkiyat Şartı
+  String _riskCategory = 'Düşük'; // Risk Kategorisi
+  String _language = 'TR'; // Dil
+  bool _taxExempt = false; // Vergi Muafiyeti
+  bool _blocked = false; // Blokeli
+  bool _oneTimeCustomer = false; // Tek Seferlik Müşteri
+
+  // Form değişiklik kontrolü
+  bool _hasUnsavedChanges = false;
+  bool _isSaved = false;
+
+  // Kişi bilgileri (Sahis şirketler için)
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabsMeta.length, vsync: this);
-    _tabController.addListener(() {
-      if (mounted) setState(() {});
+    _tabController = TabController(length: 6, vsync: this);
+
+    // Müşteri kodunu otomatik üret
+    _generateCustomerCode();
+
+    // Ünvan değiştiğinde sol paneli güncelle
+    _nameController.addListener(() {
+      setState(() {});
     });
-    _scrollController.addListener(() {
-      if (_scrollController.offset > 10 && !_isScrolled) {
-        setState(() => _isScrolled = true);
-      } else if (_scrollController.offset <= 10 && _isScrolled) {
-        setState(() => _isScrolled = false);
-      }
-    });
-    _setupFocusListeners();
+
+    // Vergi dairesi kodu değiştiğinde vergi dairesi adını doldur
+    _taxOfficeCodeController.addListener(_updateTaxOfficeName);
+
+    // Tüm controller'lara change listener ekle
+    _addChangeListeners();
   }
 
-  void _setupFocusListeners() {
-    _nameFocus.addListener(() => setState(() {}));
-    _name2Focus.addListener(() => setState(() {}));
-    _firstNameFocus.addListener(() => setState(() {}));
-    _lastNameFocus.addListener(() => setState(() {}));
-    _taxNoFocus.addListener(() => setState(() {}));
-    _taxOfficeFocus.addListener(() => setState(() {}));
-    _taxCodeFocus.addListener(() => setState(() {}));
-    _identityNoFocus.addListener(() => setState(() {}));
-    _mersisNoFocus.addListener(() => setState(() {}));
-    _kepFocus.addListener(() => setState(() {}));
-    _phoneFocus.addListener(() => setState(() {}));
-    _mobileFocus.addListener(() => setState(() {}));
-    _faxFocus.addListener(() => setState(() {}));
-    _emailFocus.addListener(() => setState(() {}));
-    _email2Focus.addListener(() => setState(() {}));
-    _websiteFocus.addListener(() => setState(() {}));
-    _cityFocus.addListener(() => setState(() {}));
-    _districtFocus.addListener(() => setState(() {}));
-    _addressFocus.addListener(() => setState(() {}));
-    _postalCodeFocus.addListener(() => setState(() {}));
-    _priceListFocus.addListener(() => setState(() {}));
-    _discountFocus.addListener(() => setState(() {}));
-    _paymentTermFocus.addListener(() => setState(() {}));
-    _creditLimitFocus.addListener(() => setState(() {}));
-    _riskLimitFocus.addListener(() => setState(() {}));
-    _creditDaysFocus.addListener(() => setState(() {}));
-    _ibanFocus.addListener(() => setState(() {}));
-    _bankNameFocus.addListener(() => setState(() {}));
-    _bankBranchFocus.addListener(() => setState(() {}));
-    _bankAccountFocus.addListener(() => setState(() {}));
-    _accountCodeFocus.addListener(() => setState(() {}));
-    _costCenterFocus.addListener(() => setState(() {}));
-    _projectCodeFocus.addListener(() => setState(() {}));
-    _salesPersonFocus.addListener(() => setState(() {}));
-    _regionFocus.addListener(() => setState(() {}));
-  }
+  void _addChangeListeners() {
+    final controllers = [
+      _codeController,
+      _nameController,
+      _phoneController,
+      _mobileController,
+      _emailController,
+      _addressController,
+      _cityController,
+      _districtController,
+      _taxNoController,
+      _taxOfficeController,
+      _identityNoController,
+      _firstNameController,
+      _lastNameController,
+    ];
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _scrollController.dispose();
-    _nameFocus.dispose();
-    _name2Focus.dispose();
-    _firstNameFocus.dispose();
-    _lastNameFocus.dispose();
-    _taxNoFocus.dispose();
-    _taxOfficeFocus.dispose();
-    _taxCodeFocus.dispose();
-    _identityNoFocus.dispose();
-    _mersisNoFocus.dispose();
-    _kepFocus.dispose();
-    _phoneFocus.dispose();
-    _mobileFocus.dispose();
-    _faxFocus.dispose();
-    _emailFocus.dispose();
-    _email2Focus.dispose();
-    _websiteFocus.dispose();
-    _cityFocus.dispose();
-    _districtFocus.dispose();
-    _addressFocus.dispose();
-    _postalCodeFocus.dispose();
-    _priceListFocus.dispose();
-    _discountFocus.dispose();
-    _paymentTermFocus.dispose();
-    _creditLimitFocus.dispose();
-    _riskLimitFocus.dispose();
-    _creditDaysFocus.dispose();
-    _ibanFocus.dispose();
-    _bankNameFocus.dispose();
-    _bankBranchFocus.dispose();
-    _bankAccountFocus.dispose();
-    _accountCodeFocus.dispose();
-    _costCenterFocus.dispose();
-    _projectCodeFocus.dispose();
-    _salesPersonFocus.dispose();
-    _regionFocus.dispose();
-    _codeController.dispose();
-    _nameController.dispose();
-    _name2Controller.dispose();
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _taxNoController.dispose();
-    _taxOfficeController.dispose();
-    _taxCodeController.dispose();
-    _identityNoController.dispose();
-    _mersisNoController.dispose();
-    _kepAddressController.dispose();
-    _phoneController.dispose();
-    _mobileController.dispose();
-    _faxController.dispose();
-    _emailController.dispose();
-    _email2Controller.dispose();
-    _websiteController.dispose();
-    _countryController.dispose();
-    _cityController.dispose();
-    _districtController.dispose();
-    _addressController.dispose();
-    _postalCodeController.dispose();
-    _priceListController.dispose();
-    _discountRateController.dispose();
-    _paymentTermController.dispose();
-    _creditLimitController.dispose();
-    _riskLimitController.dispose();
-    _creditDaysController.dispose();
-    _accountCodeController.dispose();
-    _costCenterController.dispose();
-    _projectCodeController.dispose();
-    _salesPersonController.dispose();
-    _regionController.dispose();
-    _ibanController.dispose();
-    _bankNameController.dispose();
-    _bankBranchController.dispose();
-    _bankAccountNoController.dispose();
-    super.dispose();
-  }
-
-  // Vergi numarası sorgulama
-  Future<void> _queryTaxNumber() async {
-    if (_taxNoController.text.isEmpty) {
-      _showError('Lütfen vergi numarası giriniz');
-      return;
+    for (var controller in controllers) {
+      controller.addListener(_markAsChanged);
     }
-    _showLoading();
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) Navigator.pop(context);
-    setState(() {
-      _nameController.text = 'ABC TEKNOLOJİ A.Ş.';
-      _taxOfficeController.text = 'Kadıköy';
-    });
-    _showSuccess("GİB'den bilgiler alındı:\nABC TEKNOLOJİ A.Ş. - Kadıköy VD");
   }
 
-  // TC Kimlik sorgulama
-  Future<void> _queryIdentityNo() async {
-    if (_identityNoController.text.isEmpty ||
-        _identityNoController.text.length != 11) {
-      _showError('Geçerli bir TC kimlik numarası giriniz (11 hane)');
-      return;
+  void _markAsChanged() {
+    if (!_hasUnsavedChanges && !_isSaved) {
+      setState(() {
+        _hasUnsavedChanges = true;
+      });
     }
-    _showLoading();
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) Navigator.pop(context);
-    _showSuccess(
-      'Nüfus kaydından bilgiler alındı:\nAhmet YILMAZ - 1985 doğumlu',
-    );
   }
 
-  // MERSİS sorgulama
-  Future<void> _queryMersis() async {
-    if (_mersisNoController.text.isEmpty) {
-      _showError('Lütfen MERSİS numarası giriniz');
-      return;
+  void _generateCustomerCode() {
+    // Sadece kaydet butonuna basıldığında kod artırılır
+    String prefix;
+    int counter;
+
+    if (_accountGroup == 'Müşteri') {
+      prefix = '120';
+      counter = _customerCounter;
+    } else if (_accountGroup == 'Tedarikçi') {
+      prefix = '320';
+      counter = _supplierCounter;
+    } else {
+      prefix = '120';
+      counter = _bothCounter;
     }
-    _showLoading();
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) Navigator.pop(context);
-    _showSuccess("MERSİS'ten şirket bilgileri alındı");
+
+    _codeController.text = '$prefix.${counter.toString().padLeft(3, '0')}.0001';
   }
 
-  void _showLoading() {
+  void _updateTaxOfficeName() {
+    final code = _taxOfficeCodeController.text;
+    if (_taxOfficeData.containsKey(code)) {
+      _taxOfficeController.text = _taxOfficeData[code]!;
+    }
+  }
+
+  void _searchTaxOffice() {
     showDialog(
       context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.5),
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Center(
-          child: TweenAnimationBuilder(
-            duration: const Duration(milliseconds: 400),
-            tween: Tween<double>(begin: 0, end: 1),
-            builder: (context, double value, child) {
-              return Transform.scale(
-                scale: value,
-                child: Opacity(
-                  opacity: value,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 40),
-                    padding: const EdgeInsets.all(40),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 60,
-                          offset: const Offset(0, 30),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        SizedBox(
-                          width: 56,
-                          height: 56,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 5,
-                            valueColor: AlwaysStoppedAnimation(
-                              Color(0xFF007AFF),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 28),
-                        Text(
-                          'Sorgulanıyor...',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF1D1D1F),
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Lütfen bekleyin',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xFF8E8E93),
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+      builder: (context) => _TaxOfficeSearchDialog(
+        taxOfficeData: _taxOfficeData,
+        onSelected: (code, name) {
+          _taxOfficeCodeController.text = code;
+          _taxOfficeController.text = name;
+        },
       ),
     );
   }
 
-  void _showSuccess(String message) {
-    ToastNotification.show(
-      context,
-      message: message,
-      type: ToastType.success,
-      duration: const Duration(seconds: 4),
+  void _searchAddress() {
+    showDialog(
+      context: context,
+      builder: (context) => _AddressSearchDialog(
+        onSelected: (address, city, district, postalCode) {
+          _addressController.text = address;
+          _cityController.text = city;
+          _districtController.text = district;
+          _postalCodeController.text = postalCode;
+        },
+      ),
     );
   }
 
-  void _showError(String message) {
-    ToastNotification.show(
-      context,
-      message: message,
-      type: ToastType.error,
-      duration: const Duration(seconds: 4),
+  void _searchByTaxNo() {
+    final taxNo = _taxNoController.text;
+    if (taxNo.isEmpty || taxNo.length != 10) {
+      ToastNotification.show(
+        context,
+        message: 'Lütfen geçerli bir vergi numarası giriniz (10 hane)',
+        type: ToastType.warning,
+      );
+      return;
+    }
+
+    // Simule edilmiş veri - Gerçek uygulamada API çağrısı yapılacak
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+
+    Future.delayed(const Duration(seconds: 1), () {
+      Navigator.pop(context);
+
+      // Örnek veri doldur
+      _nameController.text = 'Örnek Firma A.Ş.';
+      _taxOfficeController.text = 'Kadıköy Vergi Dairesi';
+      _taxOfficeCodeController.text = '34102';
+      _addressController.text = 'Caferağa Mah. Moda Cad. No:123';
+      _cityController.text = 'İstanbul';
+      _districtController.text = 'Kadıköy';
+      _postalCodeController.text = '34710';
+
+      ToastNotification.show(
+        context,
+        message: 'Firma bilgileri getirildi',
+        type: ToastType.success,
+      );
+    });
   }
 
-  void _showWarning(String message) {
-    ToastNotification.show(
-      context,
-      message: message,
-      type: ToastType.warning,
-      duration: const Duration(seconds: 4),
-    );
+  @override
+  void dispose() {
+    _codeController.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
+    _mobileController.dispose();
+    _faxController.dispose();
+    _emailController.dispose();
+    _websiteController.dispose();
+    _addressController.dispose();
+    _cityController.dispose();
+    _districtController.dispose();
+    _postalCodeController.dispose();
+    _countryController.dispose();
+    _taxNoController.dispose();
+    _taxOfficeController.dispose();
+    _identityNoController.dispose();
+    _ibanController.dispose();
+    _bankNameController.dispose();
+    _creditLimitController.dispose();
+    _paymentTermController.dispose();
+    _discountRateController.dispose();
+    _shortNameController.dispose();
+    _searchTermController.dispose();
+    _industryCodeController.dispose();
+    _contactPersonController.dispose();
+    _mobile2Controller.dispose();
+    _phone2Controller.dispose();
+    _deliveryNotesController.dispose();
+    _internalNotesController.dispose();
+    _vatNoController.dispose();
+    _tradeRegisterController.dispose();
+    _chamberController.dispose();
+    _routeController.dispose();
+    _territoryController.dispose();
+    _priceGroupController.dispose();
+    _customerClassController.dispose();
+    _taxOfficeCodeController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _tabController.dispose();
+    super.dispose();
   }
 
-  void _showInfo(String message) {
-    ToastNotification.show(
-      context,
-      message: message,
-      type: ToastType.info,
-      duration: const Duration(seconds: 3),
-    );
+  String? _validateCustomerCode(String? value) {
+    if (value == null || value.isEmpty) return 'Müşteri kodu zorunludur';
+
+    final parts = value.split('.');
+    if (parts.length != 3) return 'Geçersiz format (XXX.XXX.XXXX)';
+
+    final prefix = parts[0];
+    if (_accountGroup == 'Müşteri' && prefix != '120') {
+      return 'Müşteri hesap grubu için kod 120 ile başlamalı';
+    } else if (_accountGroup == 'Tedarikçi' && prefix != '320') {
+      return 'Tedarikçi hesap grubu için kod 320 ile başlamalı';
+    } else if (_accountGroup == 'Müşteri/Tedarikçi' &&
+        prefix != '120' &&
+        prefix != '320') {
+      return 'Kod 120 veya 320 ile başlamalı';
+    }
+
+    return null;
+  }
+
+  String? _validateTaxNo(String? value) {
+    if (value == null || value.isEmpty) return null;
+    if (value.length != 10) return 'Vergi numarası 10 haneli olmalıdır';
+    if (int.tryParse(value) == null) return 'Sadece rakam giriniz';
+    return null;
+  }
+
+  String? _validateIdentityNo(String? value) {
+    if (value == null || value.isEmpty) return null;
+    if (value.length != 11) return 'TC Kimlik No 11 haneli olmalıdır';
+    if (int.tryParse(value) == null) return 'Sadece rakam giriniz';
+
+    // TC Kimlik No algoritması
+    final digits = value.split('').map((e) => int.parse(e)).toList();
+    if (digits[0] == 0) return 'İlk hane 0 olamaz';
+
+    final sum1 =
+        (digits[0] + digits[2] + digits[4] + digits[6] + digits[8]) * 7;
+    final sum2 = digits[1] + digits[3] + digits[5] + digits[7];
+    final digit10 = (sum1 - sum2) % 10;
+
+    if (digit10 != digits[9]) return 'Geçersiz TC Kimlik No';
+
+    final sum3 = digits.sublist(0, 10).reduce((a, b) => a + b);
+    if (sum3 % 10 != digits[10]) return 'Geçersiz TC Kimlik No';
+
+    return null;
+  }
+
+  Future<bool> _checkUnsavedChanges() async {
+    if (_hasUnsavedChanges && !_isSaved) {
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Kaydedilmemiş Değişiklikler'),
+          content: const Text(
+            'Kaydedilmemiş değişiklikler var. Devam etmek istiyor musunuz?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Vazgeç'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Devam Et'),
+            ),
+          ],
+        ),
+      );
+      return result ?? false;
+    }
+    return true;
   }
 
   void _onSave() {
     if (_formKey.currentState?.validate() ?? false) {
-      _showSuccess('Cari hesap başarıyla kaydedildi!');
-    } else {
-      _showError('Lütfen zorunlu alanları doldurunuz');
+      // Kaydet butonuna basıldığında kod sayıcısını artır
+      if (!_isSaved) {
+        if (_accountGroup == 'Müşteri') {
+          _customerCounter++;
+        } else if (_accountGroup == 'Tedarikçi') {
+          _supplierCounter++;
+        } else {
+          _bothCounter++;
+        }
+      }
+
+      setState(() {
+        _hasUnsavedChanges = false;
+        _isSaved = true;
+      });
+
+      ToastNotification.show(
+        context,
+        message: 'Müşteri kaydı başarıyla kaydedildi',
+        type: ToastType.success,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            _buildGlassmorphicHeader(),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildGeneralTab(),
-                  _buildTaxTab(),
-                  _buildContactTab(),
-                  _buildAddressTab(),
-                  _buildFinancialTab(),
-                  _buildAccountingTab(),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 🎨 Ultra Premium Glassmorphic Header
-  Widget _buildGlassmorphicHeader() {
-    final currentTab = _tabsMeta[_tabController.index];
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            currentTab.color.withOpacity(0.15),
-            currentTab.color.withOpacity(0.05),
-          ],
-        ),
-        border: Border(
-          bottom: BorderSide(
-            color: _isScrolled
-                ? Colors.black.withOpacity(0.1)
-                : Colors.transparent,
-            width: 0.5,
-          ),
-        ),
-        boxShadow: _isScrolled
-            ? [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
+    return WillPopScope(
+      onWillPop: _checkUnsavedChanges,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
+        body: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: Row(
+                  children: [
+                    // Sol panel - Info
+                    Container(
+                      width: 320,
+                      color: Colors.white,
+                      child: _buildInfoPanel(),
+                    ),
+                    // Dikey çizgi
+                    Container(width: 1, color: const Color(0xFFE0E0E0)),
+                    // Sağ panel - Tabs + Form
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _buildTabBar(),
+                          Expanded(
+                            child: TabBarView(
+                              controller: _tabController,
+                              children: [
+                                _buildGeneralTab(),
+                                _buildContactTab(),
+                                _buildTaxTab(),
+                                _buildSalesTab(),
+                                _buildFinancialTab(),
+                                _buildNotesTab(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ]
-            : null,
-      ),
-      child: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-              child: Column(
-                children: [
-                  // Top Action Bar
-                  Row(
-                    children: [
-                      _buildGlassButton(
-                        icon: CupertinoIcons.chevron_left,
-                        color: const Color(0xFF8E8E93),
-                        onTap: widget.onClose,
-                      ),
-                      const Spacer(),
-                      _buildGlassButton(
-                        icon: CupertinoIcons.square_arrow_up,
-                        color: const Color(0xFF007AFF),
-                        onTap: () {},
-                      ),
-                      const SizedBox(width: 8),
-                      _buildGlassButton(
-                        icon: CupertinoIcons.ellipsis_circle,
-                        color: const Color(0xFF8E8E93),
-                        onTap: () {},
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Customer Info Card
-                  _buildCustomerInfoCard(),
-
-                  const SizedBox(height: 16),
-
-                  // Premium Tab Pills
-                  _buildPremiumTabPills(),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlassButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.6),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.5), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
               ),
             ],
           ),
-          child: Icon(icon, size: 20, color: color),
         ),
       ),
     );
   }
 
-  Widget _buildCustomerInfoCard() {
+  Widget _buildTabBar() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      color: Colors.white,
+      child: TabBar(
+        controller: _tabController,
+        isScrollable: true,
+        labelColor: const Color(0xFF3498DB),
+        unselectedLabelColor: const Color(0xFF7F8C8D),
+        indicatorColor: const Color(0xFF3498DB),
+        indicatorWeight: 3,
+        tabs: const [
+          Tab(icon: Icon(Icons.info_outline), text: 'Genel Bilgiler'),
+          Tab(icon: Icon(Icons.contact_phone), text: 'İletişim'),
+          Tab(icon: Icon(Icons.account_balance), text: 'Vergi & Kimlik'),
+          Tab(icon: Icon(Icons.storefront), text: 'Satış'),
+          Tab(icon: Icon(Icons.payments), text: 'Finans'),
+          Tab(icon: Icon(Icons.note), text: 'Notlar'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.5),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2C3E50), Color(0xFF34495E)],
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
-          // Avatar
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () async {
+              if (await _checkUnsavedChanges()) {
+                widget.onClose();
+              }
+            },
+          ),
+          const SizedBox(width: 8),
           Container(
-            width: 56,
-            height: 56,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  _tabsMeta[_tabController.index].color,
-                  _tabsMeta[_tabController.index].color.withOpacity(0.7),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: _tabsMeta[_tabController.index].color.withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.business, color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Müşteri Kartı',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  widget.customerId ?? 'Yeni Kayıt',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
-            child: const Icon(
-              CupertinoIcons.building_2_fill,
-              color: Colors.white,
-              size: 28,
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF27AE60),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_circle, size: 14, color: Colors.white),
+                SizedBox(width: 4),
+                Text(
+                  'Aktif',
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(Icons.save, color: Colors.white),
+            onPressed: _onSave,
+            tooltip: 'Kaydet (Ctrl+S)',
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            onPressed: () {},
+            tooltip: 'Diğer İşlemler',
+          ),
+        ],
+      ),
+    );
+  }
 
-          // Info
+  Widget _buildInfoPanel() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Customer info - Kompakt tasarım
+          _buildInfoSection('Müşteri Bilgisi', [
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF3498DB), Color(0xFF2980B9)],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.business,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _nameController.text.isEmpty
+                            ? 'Yeni Müşteri'
+                            : _nameController.text,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2C3E50),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _codeController.text,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF7F8C8D),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ]),
+
+          const SizedBox(height: 16),
+
+          // Organization info
+          _buildInfoSection('Organizasyon', [
+            _buildInfoRow('Hesap Grubu', _accountGroup),
+            _buildInfoRow('Şirket Kodu', _companyCode),
+            _buildInfoRow('Durum', _status),
+          ]),
+
+          const SizedBox(height: 20),
+
+          // Quick stats
+          _buildInfoSection('Özet Bilgiler', [
+            _buildStatRow(Icons.shopping_cart, 'Sipariş', '0', Colors.blue),
+            _buildStatRow(Icons.local_shipping, 'Teslimat', '0', Colors.orange),
+            _buildStatRow(Icons.receipt_long, 'Fatura', '0', Colors.green),
+            _buildStatRow(Icons.account_balance, 'Bakiye', '₺0.00', Colors.red),
+          ]),
+
+          const SizedBox(height: 20),
+
+          // Quick actions
+          _buildInfoSection('Hızlı İşlemler', [
+            _buildActionButton('Yeni Sipariş', Icons.add_shopping_cart),
+            const SizedBox(height: 8),
+            _buildActionButton('Ödeme Girişi', Icons.payment),
+            const SizedBox(height: 8),
+            _buildActionButton('Rapor Görüntüle', Icons.assessment),
+            const SizedBox(height: 8),
+            _buildActionButton('Geçmiş İşlemler', Icons.history),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoSection(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF95A5A6),
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8F9FA),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFE0E0E0)),
+          ),
+          child: Column(children: children),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: Color(0xFF7F8C8D)),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2C3E50),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatRow(IconData icon, String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(icon, size: 16, color: color),
+          ),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _nameController.text.isEmpty
-                      ? 'Yeni Cari Hesap'
-                      : _nameController.text,
+                  label,
                   style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1D1D1F),
-                    letterSpacing: -0.4,
+                    fontSize: 11,
+                    color: Color(0xFF95A5A6),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF007AFF).withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        _codeController.text,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF007AFF),
-                          letterSpacing: -0.1,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      width: 5,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: _isActive
-                            ? const Color(0xFF34C759)
-                            : const Color(0xFF8E8E93),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _isActive ? 'Aktif' : 'Pasif',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _isActive
-                            ? const Color(0xFF34C759)
-                            : const Color(0xFF8E8E93),
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                  ],
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
                 ),
               ],
-            ),
-          ),
-
-          // Save Button
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: _onSave,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF007AFF), Color(0xFF0051D5)],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF007AFF).withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      CupertinoIcons.checkmark_alt,
-                      size: 16,
-                      color: Colors.white,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      'Kaydet',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ),
         ],
@@ -749,909 +744,581 @@ class _CustomerCardViewState extends State<CustomerCardView>
     );
   }
 
-  Widget _buildPremiumTabPills() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: List.generate(_tabsMeta.length, (index) {
-          final tab = _tabsMeta[index];
-          final isSelected = index == _tabController.index;
-
-          return Padding(
-            padding: EdgeInsets.only(
-              right: index < _tabsMeta.length - 1 ? 8 : 0,
-            ),
-            child: MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () => _tabController.animateTo(index),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutCubic,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: isSelected
-                        ? LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [tab.color, tab.color.withOpacity(0.8)],
-                          )
-                        : null,
-                    color: isSelected ? null : Colors.white.withOpacity(0.6),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected
-                          ? Colors.white.withOpacity(0.4)
-                          : Colors.white.withOpacity(0.3),
-                      width: 1.5,
-                    ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: tab.color.withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                        : [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        tab.icon,
-                        size: 18,
-                        color: isSelected
-                            ? Colors.white
-                            : const Color(0xFF8E8E93),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        tab.label,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF8E8E93),
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+  Widget _buildActionButton(String label, IconData icon) {
+    return InkWell(
+      onTap: () {},
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE0E0E0)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: const Color(0xFF3498DB)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(fontSize: 12, color: Color(0xFF2C3E50)),
               ),
             ),
-          );
-        }),
+            const Icon(Icons.chevron_right, size: 16, color: Color(0xFF95A5A6)),
+          ],
+        ),
       ),
     );
   }
 
-  // ==== GENEL / VERGİ / İLETİŞİM / ADRES / FİNANSAL / MUHASEBE TABLARI ====
-  // (Aşağıdakiler senin önce yazdığın ile birebir aynı mantık, dokunmadım)
-
+  // Tab 1: Genel Bilgiler
   Widget _buildGeneralTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionCard('Temel Bilgiler', [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildModernField(
-                    controller: _codeController,
-                    label: 'Cari Kodu',
-                    required: true,
-                    readOnly: true,
-                    prefixIcon: CupertinoIcons.barcode,
-                  ),
+          _buildSectionTitle('Temel Bilgiler'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: _buildField(
+                  'Müşteri Numarası *',
+                  _codeController,
+                  validator: _validateCustomerCode,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernDropdown(
-                    label: 'Hesap Kategorisi',
-                    value: _accountCategory,
-                    items: const [
-                      'Müşteri',
-                      'Tedarikçi',
-                      'Müşteri/Tedarikçi',
-                      'Personel',
-                      'Ortak',
-                    ],
-                    onChanged: (val) => setState(() => _accountCategory = val!),
-                  ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildDropdown(
+                  'Hesap Grubu *',
+                  _accountGroup,
+                  ['Müşteri', 'Tedarikçi', 'Müşteri/Tedarikçi'],
+                  (val) {
+                    setState(() {
+                      _accountGroup = val!;
+                      _generateCustomerCode();
+                    });
+                  },
                 ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildModernDropdown(
-                    label: 'Kişi/Kurum Tipi',
-                    value: _customerType,
-                    items: const ['Bireysel', 'Kurumsal'],
-                    onChanged: (val) => setState(() => _customerType = val!),
-                  ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildDropdown(
+                  'Şirket Kodu *',
+                  _companyCode,
+                  ['1000', '2000', '3000'],
+                  (val) => setState(() => _companyCode = val!),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernDropdown(
-                    label: 'Şube',
-                    value: _branch,
-                    items: const ['Ankara', 'İstanbul', 'İzmir', 'Merkez'],
-                    onChanged: (val) => setState(() => _branch = val!),
-                  ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildField(
+            'Müşteri Adı (Ünvan) *',
+            _nameController,
+            validator: (val) => val?.isEmpty ?? true ? 'Zorunlu alan' : null,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _buildField('Kısa Ad', _shortNameController)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildField('Arama Terimi', _searchTermController),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Sınıflandırma'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDropdown(
+                  'Müşteri Tipi',
+                  _customerType,
+                  ['Perakende', 'Kurumsal', 'Kamu', 'İhracat'],
+                  (val) => setState(() => _customerType = val!),
                 ),
-              ],
-            ),
-            _buildModernField(
-              controller: _nameController,
-              focusNode: _nameFocus,
-              label: 'Ünvan',
-              required: true,
-              prefixIcon: CupertinoIcons.textformat,
-              validator: (val) =>
-                  val?.isEmpty ?? true ? 'Ünvan zorunludur' : null,
-              onChanged: (_) => setState(() {}),
-            ),
-            _buildModernField(
-              controller: _name2Controller,
-              focusNode: _name2Focus,
-              label: 'Ünvan 2 (Ek Açıklama)',
-              prefixIcon: CupertinoIcons.text_append,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildModernField(
-                    controller: _firstNameController,
-                    focusNode: _firstNameFocus,
-                    label: 'Adı',
-                    prefixIcon: CupertinoIcons.person,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernField(
-                    controller: _lastNameController,
-                    focusNode: _lastNameFocus,
-                    label: 'Soyadı',
-                    prefixIcon: CupertinoIcons.person_fill,
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildModernField(
-                    controller: _salesPersonController,
-                    focusNode: _salesPersonFocus,
-                    label: 'Satış Temsilcisi',
-                    suffixIcon: CupertinoIcons.search,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernField(
-                    controller: _regionController,
-                    focusNode: _regionFocus,
-                    label: 'Bölge/Sektör',
-                    prefixIcon: CupertinoIcons.map,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                _buildModernCheckbox(
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildDropdown('Dil', _language, [
+                  'TR',
+                  'EN',
+                  'DE',
+                  'FR',
+                ], (val) => setState(() => _language = val!)),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildDropdown('Durum', _status, [
                   'Aktif',
-                  _isActive,
-                  (val) => setState(() => _isActive = val ?? true),
+                  'Pasif',
+                  'Beklemede',
+                ], (val) => setState(() => _status = val!)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildField('Sektör Kodu', _industryCodeController),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildField('Müşteri Sınıfı', _customerClassController),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: CheckboxListTile(
+                  title: const Text(
+                    'Tek Seferlik Müşteri',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                  value: _oneTimeCustomer,
+                  onChanged: (val) => setState(() => _oneTimeCustomer = val!),
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
                 ),
-                const SizedBox(width: 24),
-                _buildModernCheckbox(
-                  'e-Fatura',
-                  _isEInvoice,
-                  (val) => setState(() => _isEInvoice = val ?? false),
+              ),
+              Expanded(
+                child: CheckboxListTile(
+                  title: const Text('Blokeli', style: TextStyle(fontSize: 13)),
+                  value: _blocked,
+                  onChanged: (val) => setState(() => _blocked = val!),
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
                 ),
-                const SizedBox(width: 24),
-                _buildModernCheckbox(
-                  'e-Arşiv',
-                  _isEArchive,
-                  (val) => setState(() => _isEArchive = val ?? false),
-                ),
-              ],
-            ),
-          ]),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildTaxTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          _buildSectionCard('Vergi Bilgileri', [
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: _buildModernField(
-                    controller: _taxNoController,
-                    focusNode: _taxNoFocus,
-                    label: 'Vergi Numarası',
-                    keyboardType: TextInputType.number,
-                    maxLength: 10,
-                    prefixIcon: CupertinoIcons.number,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: _buildModernButton(
-                    label: 'GİB Sorgula',
-                    icon: CupertinoIcons.search,
-                    onPressed: _queryTaxNumber,
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildModernField(
-                    controller: _taxOfficeController,
-                    focusNode: _taxOfficeFocus,
-                    label: 'Vergi Dairesi',
-                    prefixIcon: CupertinoIcons.building_2_fill,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernField(
-                    controller: _taxCodeController,
-                    focusNode: _taxCodeFocus,
-                    label: 'Vergi Kodu',
-                    keyboardType: TextInputType.number,
-                    maxLength: 4,
-                    prefixIcon: CupertinoIcons.barcode,
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: _buildModernField(
-                    controller: _identityNoController,
-                    focusNode: _identityNoFocus,
-                    label: 'TC Kimlik No',
-                    keyboardType: TextInputType.number,
-                    maxLength: 11,
-                    prefixIcon: CupertinoIcons.person_badge_plus,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: _buildModernButton(
-                    label: 'Nüfus Sorgula',
-                    icon: CupertinoIcons.search,
-                    onPressed: _queryIdentityNo,
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: _buildModernField(
-                    controller: _mersisNoController,
-                    focusNode: _mersisNoFocus,
-                    label: 'MERSİS No',
-                    keyboardType: TextInputType.number,
-                    maxLength: 16,
-                    prefixIcon: CupertinoIcons.doc_text,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: _buildModernButton(
-                    label: 'MERSİS Sorgula',
-                    icon: CupertinoIcons.search,
-                    onPressed: _queryMersis,
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildModernDropdown(
-                    label: 'Vergi Durumu',
-                    value: _taxStatus,
-                    items: const [
-                      'Tam Mükellef',
-                      'Dar Mükellef',
-                      'Muaf',
-                      'İstisna',
-                    ],
-                    onChanged: (val) => setState(() => _taxStatus = val!),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernDropdown(
-                    label: 'Muhasebe Tipi',
-                    value: _accountingType,
-                    items: const ['Ticari', 'Serbest Meslek', 'Diğer'],
-                    onChanged: (val) => setState(() => _accountingType = val!),
-                  ),
-                ),
-              ],
-            ),
-            _buildModernField(
-              controller: _kepAddressController,
-              focusNode: _kepFocus,
-              label: 'KEP Adresi',
-              keyboardType: TextInputType.emailAddress,
-              prefixIcon: CupertinoIcons.mail,
-            ),
-          ]),
-        ],
-      ),
-    );
-  }
-
+  // Tab 2: İletişim
   Widget _buildContactTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionCard('İletişim Bilgileri', [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildModernField(
-                    controller: _phoneController,
-                    focusNode: _phoneFocus,
-                    label: 'Telefon',
-                    keyboardType: TextInputType.phone,
-                    prefixIcon: CupertinoIcons.phone,
-                    prefixText: '+90 ',
-                  ),
+          _buildSectionTitle('Yetkili Kişi'),
+          const SizedBox(height: 20),
+          _buildField('Yetkili Kişi Adı', _contactPersonController),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Telefon Bilgileri'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(child: _buildField('Telefon 1', _phoneController)),
+              const SizedBox(width: 16),
+              Expanded(child: _buildField('Telefon 2', _phone2Controller)),
+              const SizedBox(width: 16),
+              Expanded(child: _buildField('Faks', _faxController)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _buildField('Mobil 1', _mobileController)),
+              const SizedBox(width: 16),
+              Expanded(child: _buildField('Mobil 2', _mobile2Controller)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Dijital İletişim'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(child: _buildField('E-posta', _emailController)),
+              const SizedBox(width: 16),
+              Expanded(child: _buildField('Web Sitesi', _websiteController)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Adres Bilgileri'),
+          const SizedBox(height: 20),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildField('Adres', _addressController, maxLines: 1),
+              ),
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(top: 24),
+                child: IconButton(
+                  icon: const Icon(Icons.search, color: Color(0xFF3498DB)),
+                  tooltip: 'Adres Ara (min 3 harf)',
+                  onPressed: _searchAddress,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernField(
-                    controller: _mobileController,
-                    focusNode: _mobileFocus,
-                    label: 'Mobil',
-                    keyboardType: TextInputType.phone,
-                    prefixIcon: CupertinoIcons.device_phone_portrait,
-                    prefixText: '+90 ',
-                  ),
-                ),
-              ],
-            ),
-            _buildModernField(
-              controller: _faxController,
-              focusNode: _faxFocus,
-              label: 'Faks',
-              keyboardType: TextInputType.phone,
-              prefixIcon: CupertinoIcons.printer,
-              prefixText: '+90 ',
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildModernField(
-                    controller: _emailController,
-                    focusNode: _emailFocus,
-                    label: 'E-posta',
-                    keyboardType: TextInputType.emailAddress,
-                    prefixIcon: CupertinoIcons.mail,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernField(
-                    controller: _email2Controller,
-                    focusNode: _email2Focus,
-                    label: 'E-posta 2',
-                    keyboardType: TextInputType.emailAddress,
-                    prefixIcon: CupertinoIcons.mail_solid,
-                  ),
-                ),
-              ],
-            ),
-            _buildModernField(
-              controller: _websiteController,
-              focusNode: _websiteFocus,
-              label: 'Web Sitesi',
-              keyboardType: TextInputType.url,
-              prefixIcon: CupertinoIcons.globe,
-            ),
-          ]),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _buildField('Şehir', _cityController)),
+              const SizedBox(width: 16),
+              Expanded(child: _buildField('İlçe', _districtController)),
+              const SizedBox(width: 16),
+              Expanded(child: _buildField('Posta Kodu', _postalCodeController)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildField('Ülke', _countryController),
         ],
       ),
     );
   }
 
-  Widget _buildAddressTab() {
+  // Tab 3: Vergi & Kimlik
+  Widget _buildTaxTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionCard('Adres Bilgileri', [
-            Row(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: _buildModernField(
-                    controller: _countryController,
-                    label: 'Ülke',
-                    readOnly: true,
-                    prefixIcon: CupertinoIcons.flag,
-                  ),
+          _buildSectionTitle('Vergi Bilgileri'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildField(
+                        'Vergi Dairesi Kodu',
+                        _taxOfficeCodeController,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.search,
+                          color: Color(0xFF3498DB),
+                        ),
+                        tooltip: 'Vergi Dairesi Ara',
+                        onPressed: _searchTaxOffice,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 2,
-                  child: _buildModernField(
-                    controller: _cityController,
-                    focusNode: _cityFocus,
-                    label: 'Şehir',
-                    prefixIcon: CupertinoIcons.location,
-                  ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 3,
+                child: _buildField('Vergi Dairesi', _taxOfficeController),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildField(
+                        'Vergi Numarası (10 Hane)',
+                        _taxNoController,
+                        validator: _validateTaxNo,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.search,
+                          color: Color(0xFF3498DB),
+                        ),
+                        tooltip: 'Vergi No ile Firma Sorgula',
+                        onPressed: _searchByTaxNo,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 2,
-                  child: _buildModernField(
-                    controller: _districtController,
-                    focusNode: _districtFocus,
-                    label: 'İlçe',
-                    prefixIcon: CupertinoIcons.placemark,
-                  ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(child: _buildField('KDV Numarası', _vatNoController)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          CheckboxListTile(
+            title: const Text(
+              'Vergi Muafiyeti',
+              style: TextStyle(fontSize: 13),
+            ),
+            value: _taxExempt,
+            onChanged: (val) => setState(() => _taxExempt = val!),
+            contentPadding: EdgeInsets.zero,
+          ),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Kimlik Bilgileri'),
+          const SizedBox(height: 20),
+          _buildField(
+            'TC Kimlik No (11 Hane)',
+            _identityNoController,
+            validator: _validateIdentityNo,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildField(
+                  'Ticaret Sicil No',
+                  _tradeRegisterController,
                 ),
-              ],
-            ),
-            _buildModernField(
-              controller: _addressController,
-              focusNode: _addressFocus,
-              label: 'Açık Adres',
-              maxLines: 3,
-              prefixIcon: CupertinoIcons.location,
-            ),
-            _buildModernField(
-              controller: _postalCodeController,
-              focusNode: _postalCodeFocus,
-              label: 'Posta Kodu',
-              keyboardType: TextInputType.number,
-              maxLength: 5,
-              prefixIcon: CupertinoIcons.map,
-            ),
-          ]),
+              ),
+              const SizedBox(width: 16),
+              Expanded(child: _buildField('Ticaret Odası', _chamberController)),
+            ],
+          ),
         ],
       ),
     );
   }
 
+  // Tab 4: Satış
+  Widget _buildSalesTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('Satış Organizasyonu'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _buildField(
+                  'Satış Org.',
+                  TextEditingController(text: _salesOrg),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildField(
+                  'Dağıtım Kanalı',
+                  TextEditingController(text: _distributionChannel),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildField(
+                  'Bölüm',
+                  TextEditingController(text: _division),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Fiyatlandırma'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDropdown(
+                  'Fiyat Listesi',
+                  _priceList,
+                  ['Standart', 'Promosyon', 'VIP', 'Özel'],
+                  (val) => setState(() => _priceList = val!),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildField('Fiyat Grubu', _priceGroupController),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Bölge Bilgileri'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(child: _buildField('Rota', _routeController)),
+              const SizedBox(width: 16),
+              Expanded(child: _buildField('Bölge', _territoryController)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Nakliye'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDropdown(
+                  'Teslim Şartları (Incoterms)',
+                  _incoterms,
+                  [
+                    'EXW',
+                    'FCA',
+                    'CPT',
+                    'CIP',
+                    'DAP',
+                    'DPU',
+                    'DDP',
+                    'FAS',
+                    'FOB',
+                    'CFR',
+                    'CIF',
+                  ],
+                  (val) => setState(() => _incoterms = val!),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildDropdown(
+                  'Sevkiyat Şartı',
+                  _shippingCondition,
+                  ['Standart', 'Ekspres', 'Kargo', 'Özel Araç'],
+                  (val) => setState(() => _shippingCondition = val!),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildField(
+            'Teslimat Notları',
+            _deliveryNotesController,
+            maxLines: 2,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Tab 5: Finans
   Widget _buildFinancialTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionCard('Fiyat ve İskonto', [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildModernField(
-                    controller: _priceListController,
-                    focusNode: _priceListFocus,
-                    label: 'Fiyat Listesi',
-                    suffixIcon: CupertinoIcons.search,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernDropdown(
-                    label: 'Para Birimi',
-                    value: _currency,
-                    items: const ['TRY', 'USD', 'EUR', 'GBP'],
-                    onChanged: (val) => setState(() => _currency = val!),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildModernField(
-                    controller: _discountRateController,
-                    focusNode: _discountFocus,
-                    label: 'İskonto Oranı',
-                    keyboardType: TextInputType.number,
-                    suffixText: '%',
-                    prefixIcon: CupertinoIcons.percent,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernField(
-                    controller: _paymentTermController,
-                    focusNode: _paymentTermFocus,
-                    label: 'Ödeme Vadesi',
-                    keyboardType: TextInputType.number,
-                    suffixText: 'Gün',
-                    prefixIcon: CupertinoIcons.calendar,
-                  ),
-                ),
-              ],
-            ),
-          ]),
+          _buildSectionTitle('Kredi ve Limit'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _buildField('Kredi Limiti', _creditLimitController),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildDropdown('Para Birimi', _currency, [
+                  'TRY',
+                  'USD',
+                  'EUR',
+                  'GBP',
+                ], (val) => setState(() => _currency = val!)),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
-          _buildSectionCard('Limit ve Risk', [
-            _buildModernField(
-              controller: _creditLimitController,
-              focusNode: _creditLimitFocus,
-              label: 'Kredi Limiti',
-              keyboardType: TextInputType.number,
-              prefixIcon: CupertinoIcons.creditcard,
-              suffixText: _currency,
-            ),
-            _buildModernField(
-              controller: _riskLimitController,
-              focusNode: _riskLimitFocus,
-              label: 'Risk Limiti',
-              keyboardType: TextInputType.number,
-              prefixIcon: CupertinoIcons.shield,
-              suffixText: _currency,
-            ),
-            _buildModernField(
-              controller: _creditDaysController,
-              focusNode: _creditDaysFocus,
-              label: 'Maksimum Vade Süresi',
-              keyboardType: TextInputType.number,
-              prefixIcon: CupertinoIcons.time,
-              suffixText: 'Gün',
-            ),
-          ]),
+          Row(
+            children: [
+              Expanded(
+                child: _buildField(
+                  'Ödeme Vadesi (Gün)',
+                  _paymentTermController,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildField(
+                  'İskonto Oranı (%)',
+                  _discountRateController,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Banka Bilgileri'),
+          const SizedBox(height: 20),
+          _buildField('IBAN', _ibanController),
           const SizedBox(height: 16),
-          _buildSectionCard('Banka Bilgileri', [
-            _buildModernField(
-              controller: _ibanController,
-              focusNode: _ibanFocus,
-              label: 'IBAN',
-              maxLength: 26,
-              prefixIcon: CupertinoIcons.creditcard,
-            ),
-            _buildModernField(
-              controller: _bankNameController,
-              focusNode: _bankNameFocus,
-              label: 'Banka Adı',
-              prefixIcon: CupertinoIcons.building_2_fill,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildModernField(
-                    controller: _bankBranchController,
-                    focusNode: _bankBranchFocus,
-                    label: 'Şube Adı',
-                    prefixIcon: CupertinoIcons.location,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernField(
-                    controller: _bankAccountNoController,
-                    focusNode: _bankAccountFocus,
-                    label: 'Hesap No',
-                    keyboardType: TextInputType.number,
-                    prefixIcon: CupertinoIcons.number,
-                  ),
-                ),
-              ],
-            ),
-          ]),
+          _buildField('Banka Adı', _bankNameController),
+          const SizedBox(height: 16),
+          _buildDropdown(
+            'Ödeme Yöntemi',
+            _paymentMethod,
+            ['Havale', 'Kredi Kartı', 'Çek', 'Senet', 'Nakit'],
+            (val) => setState(() => _paymentMethod = val!),
+          ),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Risk Yönetimi'),
+          const SizedBox(height: 20),
+          _buildDropdown(
+            'Risk Kategorisi',
+            _riskCategory,
+            ['Düşük', 'Orta', 'Yüksek', 'Kritik'],
+            (val) => setState(() => _riskCategory = val!),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildAccountingTab() {
+  // Tab 6: Notlar
+  Widget _buildNotesTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionCard('Muhasebe Kodları', [
-            _buildModernField(
-              controller: _accountCodeController,
-              focusNode: _accountCodeFocus,
-              label: 'Ana Hesap Kodu',
-              prefixIcon: CupertinoIcons.chart_bar_square,
-              suffixIcon: CupertinoIcons.search,
-            ),
-            _buildModernField(
-              controller: _costCenterController,
-              focusNode: _costCenterFocus,
-              label: 'Masraf Merkezi',
-              prefixIcon: CupertinoIcons.squares_below_rectangle,
-              suffixIcon: CupertinoIcons.search,
-            ),
-            _buildModernField(
-              controller: _projectCodeController,
-              focusNode: _projectCodeFocus,
-              label: 'Proje Kodu',
-              prefixIcon: CupertinoIcons.folder,
-              suffixIcon: CupertinoIcons.search,
-            ),
-          ]),
+          _buildSectionTitle('Dahili Notlar'),
+          const SizedBox(height: 20),
+          _buildField('Dahili Notlar', _internalNotesController, maxLines: 10),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Teslimat Notları'),
+          const SizedBox(height: 20),
+          _buildField(
+            'Teslimat Notları',
+            _deliveryNotesController,
+            maxLines: 6,
+          ),
         ],
       ),
     );
   }
 
-  // ====== ORTAK WIDGET’LAR ==================================================
-  Widget _buildSectionCard(String title, List<Widget> children) {
+  Widget _buildSectionTitle(String title) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
-          ),
-        ],
+      padding: const EdgeInsets.only(bottom: 12),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFF3498DB), width: 2)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1D1D1F),
-                letterSpacing: -0.3,
-              ),
-            ),
-          ),
-          Container(height: 1, color: Colors.grey.shade100),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(children: children),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModernField({
-    required TextEditingController controller,
-    required String label,
-    FocusNode? focusNode,
-    bool required = false,
-    String? Function(String?)? validator,
-    Function(String)? onChanged,
-    TextInputType? keyboardType,
-    bool readOnly = false,
-    int maxLines = 1,
-    int? maxLength,
-    IconData? prefixIcon,
-    IconData? suffixIcon,
-    String? suffixText,
-    String? prefixText,
-  }) {
-    final isFocused = focusNode?.hasFocus ?? false;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1D1D1F),
-                  letterSpacing: -0.2,
-                ),
-              ),
-              if (required)
-                const Text(
-                  ' *',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFFF3B30),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            decoration: BoxDecoration(
-              gradient: isFocused
-                  ? LinearGradient(
-                      colors: [
-                        const Color(0xFF007AFF).withOpacity(0.12),
-                        const Color(0xFF007AFF).withOpacity(0.06),
-                      ],
-                    )
-                  : null,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: isFocused
-                    ? const Color(0xFF007AFF).withOpacity(0.4)
-                    : Colors.transparent,
-                width: isFocused ? 1.5 : 0,
-              ),
-            ),
-            child: TextFormField(
-              controller: controller,
-              focusNode: focusNode,
-              validator: validator,
-              onChanged: onChanged,
-              keyboardType: keyboardType,
-              readOnly: readOnly,
-              maxLines: maxLines,
-              maxLength: maxLength,
-              style: TextStyle(
-                fontSize: 14,
-                color: readOnly
-                    ? Colors.grey.shade700
-                    : const Color(0xFF1D1D1F),
-                fontWeight: FontWeight.w500,
-              ),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey.shade50,
-                prefixIcon: prefixIcon != null
-                    ? Icon(prefixIcon, size: 18, color: Colors.grey.shade600)
-                    : null,
-                prefixText: prefixText,
-                prefixStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1D1D1F),
-                ),
-                suffixIcon: suffixIcon != null
-                    ? Icon(suffixIcon, size: 18, color: Colors.grey.shade600)
-                    : null,
-                suffixText: suffixText,
-                suffixStyle: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade600,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  borderSide: BorderSide.none,
-                ),
-                errorBorder: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  borderSide: BorderSide(color: Color(0xFFFF3B30)),
-                ),
-                focusedErrorBorder: const OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  borderSide: BorderSide(color: Color(0xFFFF3B30), width: 1.5),
-                ),
-                counterText: '',
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModernDropdown({
-    required String label,
-    required String value,
-    required List<String> items,
-    required Function(String?) onChanged,
-    bool required = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1D1D1F),
-                  letterSpacing: -0.2,
-                ),
-              ),
-              if (required)
-                const Text(
-                  ' *',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFFF3B30),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
           Container(
+            width: 4,
+            height: 20,
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade200),
+              color: const Color(0xFF3498DB),
+              borderRadius: BorderRadius.circular(2),
             ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: value,
-                isExpanded: true,
-                borderRadius: BorderRadius.circular(10),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF1D1D1F),
-                ),
-                icon: Icon(
-                  CupertinoIcons.chevron_down,
-                  size: 16,
-                  color: Colors.grey.shade600,
-                ),
-                items: items
-                    .map(
-                      (item) =>
-                          DropdownMenuItem(value: item, child: Text(item)),
-                    )
-                    .toList(),
-                onChanged: onChanged,
-              ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2C3E50),
             ),
           ),
         ],
@@ -1659,72 +1326,388 @@ class _CustomerCardViewState extends State<CustomerCardView>
     );
   }
 
-  Widget _buildModernCheckbox(
+  Widget _buildField(
     String label,
-    bool value,
-    Function(bool?) onChanged,
-  ) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    TextEditingController controller, {
+    bool enabled = true,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Transform.scale(
-          scale: 1.1,
-          child: Checkbox(
-            value: value,
-            onChanged: onChanged,
-            activeColor: const Color(0xFF007AFF),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-        ),
         Text(
           label,
           style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1D1D1F),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2C3E50),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          enabled: enabled,
+          maxLines: maxLines,
+          validator: validator,
+          style: const TextStyle(fontSize: 14),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: enabled ? Colors.white : const Color(0xFFF5F5F5),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(6),
+              borderSide: const BorderSide(color: Color(0xFFBDBDBD)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(6),
+              borderSide: const BorderSide(color: Color(0xFFBDBDBD)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(6),
+              borderSide: const BorderSide(color: Color(0xFF3498DB), width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(6),
+              borderSide: const BorderSide(color: Color(0xFFE74C3C)),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildModernButton({
-    required String label,
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return SizedBox(
-      height: 48,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 16),
-        label: Text(
+  Widget _buildDropdown(
+    String label,
+    String value,
+    List<String> items,
+    Function(String?) onChanged,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
           label,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF007AFF),
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2C3E50),
           ),
-          elevation: 0,
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: value,
+          items: items
+              .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+              .toList(),
+          onChanged: onChanged,
+          style: const TextStyle(fontSize: 14, color: Color(0xFF2C3E50)),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(6),
+              borderSide: const BorderSide(color: Color(0xFFBDBDBD)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(6),
+              borderSide: const BorderSide(color: Color(0xFFBDBDBD)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(6),
+              borderSide: const BorderSide(color: Color(0xFF3498DB), width: 2),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Vergi Dairesi Arama Dialog
+class _TaxOfficeSearchDialog extends StatefulWidget {
+  final Map<String, String> taxOfficeData;
+  final Function(String code, String name) onSelected;
+
+  const _TaxOfficeSearchDialog({
+    required this.taxOfficeData,
+    required this.onSelected,
+  });
+
+  @override
+  State<_TaxOfficeSearchDialog> createState() => _TaxOfficeSearchDialogState();
+}
+
+class _TaxOfficeSearchDialogState extends State<_TaxOfficeSearchDialog> {
+  final _searchController = TextEditingController();
+  List<MapEntry<String, String>> _filteredList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredList = widget.taxOfficeData.entries.toList();
+    _searchController.addListener(_filterList);
+  }
+
+  void _filterList() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredList = widget.taxOfficeData.entries
+          .where(
+            (e) =>
+                e.key.contains(query) || e.value.toLowerCase().contains(query),
+          )
+          .toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: Container(
+        width: 600,
+        height: 500,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.search, color: Color(0xFF3498DB)),
+                const SizedBox(width: 12),
+                const Text(
+                  'Vergi Dairesi Ara',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2C3E50),
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Kod veya vergi dairesi adı ile arayın...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _filteredList.length,
+                itemBuilder: (context, index) {
+                  final entry = _filteredList[index];
+                  return ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3498DB).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        entry.key,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF3498DB),
+                        ),
+                      ),
+                    ),
+                    title: Text(entry.value),
+                    onTap: () {
+                      widget.onSelected(entry.key, entry.value);
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-/// Tam ekran wrapper
-class CustomerCardPage extends StatelessWidget {
-  final VoidCallback onClose;
+// Adres Arama Dialog
+class _AddressSearchDialog extends StatefulWidget {
+  final Function(
+    String address,
+    String city,
+    String district,
+    String postalCode,
+  )
+  onSelected;
 
-  const CustomerCardPage({super.key, required this.onClose});
+  const _AddressSearchDialog({required this.onSelected});
+
+  @override
+  State<_AddressSearchDialog> createState() => _AddressSearchDialogState();
+}
+
+class _AddressSearchDialogState extends State<_AddressSearchDialog> {
+  final _searchController = TextEditingController();
+  List<Map<String, String>> _filteredList = [];
+
+  // Örnek adres verileri
+  final List<Map<String, String>> _addressData = [
+    {
+      'address': 'Atatürk Cad. No:15',
+      'city': 'İstanbul',
+      'district': 'Kadıköy',
+      'postal': '34710',
+    },
+    {
+      'address': 'Cumhuriyet Mah. İstiklal Sok. No:42',
+      'city': 'Ankara',
+      'district': 'Çankaya',
+      'postal': '06420',
+    },
+    {
+      'address': 'Alsancak Mah. Kıbrıs Şehitleri Cad. No:8',
+      'city': 'İzmir',
+      'district': 'Konak',
+      'postal': '35220',
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredList = _addressData;
+    _searchController.addListener(_filterList);
+  }
+
+  void _filterList() {
+    final query = _searchController.text.toLowerCase();
+    if (query.length < 3) {
+      setState(() => _filteredList = []);
+      return;
+    }
+
+    setState(() {
+      _filteredList = _addressData
+          .where(
+            (e) =>
+                e['address']!.toLowerCase().contains(query) ||
+                e['city']!.toLowerCase().contains(query) ||
+                e['district']!.toLowerCase().contains(query),
+          )
+          .toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return CustomerCardView(onClose: onClose);
+    return Dialog(
+      child: Container(
+        width: 700,
+        height: 500,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.location_on, color: Color(0xFF3498DB)),
+                const SizedBox(width: 12),
+                const Text(
+                  'Adres Ara',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2C3E50),
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'En az 3 harf yazarak arayın...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (_searchController.text.isNotEmpty &&
+                _searchController.text.length < 3)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'Arama yapmak için en az 3 karakter giriniz',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _filteredList.length,
+                itemBuilder: (context, index) {
+                  final item = _filteredList[index];
+                  return ListTile(
+                    leading: const Icon(
+                      Icons.location_city,
+                      color: Color(0xFF3498DB),
+                    ),
+                    title: Text(item['address']!),
+                    subtitle: Text(
+                      '${item['district']} / ${item['city']} - ${item['postal']}',
+                    ),
+                    onTap: () {
+                      widget.onSelected(
+                        item['address']!,
+                        item['city']!,
+                        item['district']!,
+                        item['postal']!,
+                      );
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -111,7 +111,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
           id: id,
           icon: Icons.person_rounded,
           label: 'Müşteri Kartı',
-          builder: (ctx) => CustomerCardView(onClose: _closeCustomerCardTab),
+          builder: (ctx) => CustomerCardPage(onClose: _closeCustomerCardTab),
         ),
       );
     }

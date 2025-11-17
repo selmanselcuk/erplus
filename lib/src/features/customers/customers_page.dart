@@ -348,7 +348,7 @@ class _CustomersPageState extends State<CustomersPage> with PageLoadingMixin {
             child: TabBarView(
               children: [
                 // 1) GENEL BİLGİLER – Müşteri Kartı formu
-                CustomerCardView(
+                CustomerCardPage(
                   onClose: () {
                     setState(() {
                       _showCustomerCardTabs = false;
