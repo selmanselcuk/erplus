@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../widgets/page_loading_overlay.dart';
 
-// Müşteri Kartı içeriğini embed etmek için
+// Müşteri Kartı ve Liste içeriğini embed etmek için
 import 'customer_card_page.dart';
+import 'customer_list_page.dart';
 
 /// Sayfa modu: L2 hub mı gösteriliyor, yoksa seçili L2'nin L3 menüleri mi?
 enum _PageMode { hub, section }
 
 class CustomersPage extends StatefulWidget {
-  const CustomersPage({super.key, this.onOpenCustomerCard});
+  const CustomersPage(
+      {super.key, this.onOpenCustomerCard, this.onOpenCustomerList});
 
   // L3 "Müşteri Kartı"na tıklanınca çağrılacak callback
   final VoidCallback? onOpenCustomerCard;
+
+  // L3 "Müşteri Listesi"ne tıklanınca çağrılacak callback
+  final VoidCallback? onOpenCustomerList;
 
   @override
   State<CustomersPage> createState() => _CustomersPageState();
@@ -24,6 +29,9 @@ class _CustomersPageState extends State<CustomersPage> with PageLoadingMixin {
   /// Müşteri Yönetimi > Müşteri Kartı seçildiğinde
   /// L3 grid yerine TabBar + CustomerCardView gösterilsin mi?
   bool _showCustomerCardTabs = false;
+
+  /// Müşteri Listesi görünümü aktif mi?
+  bool _showCustomerList = false;
 
   /// L2 → L3 geçiş
   Future<void> _navigateToSection(_L2Section section) async {
@@ -262,13 +270,22 @@ class _CustomersPageState extends State<CustomersPage> with PageLoadingMixin {
           ),
           const SizedBox(height: 14),
 
-          // Burada iki mod var:
+          // Burada üç mod var:
           // 1) Normal: L3 grid (tüm feature kartları)
           // 2) Eğer Müşteri Yönetimi > Müşteri Kartı seçildiyse: TabBar + CustomerCardView
+          // 3) Eğer Müşteri Listesi seçildiyse: CustomerListPage
           Expanded(
-            child: _showCustomerCardTabs && section.id == 'musteri'
-                ? _buildCustomerCardTabs()
-                : _buildL3Grid(section, features),
+            child: _showCustomerList && section.id == 'musteri'
+                ? CustomerListPage(
+                    onOpenCustomerCard: (customerId) {
+                      if (widget.onOpenCustomerCard != null) {
+                        widget.onOpenCustomerCard!();
+                      }
+                    },
+                  )
+                : (_showCustomerCardTabs && section.id == 'musteri'
+                    ? _buildCustomerCardTabs()
+                    : _buildL3Grid(section, features)),
           ),
         ],
       ),
@@ -305,6 +322,14 @@ class _CustomersPageState extends State<CustomersPage> with PageLoadingMixin {
                   if (section.id == 'musteri' && f.id == 'musteri-kart') {
                     if (widget.onOpenCustomerCard != null) {
                       widget.onOpenCustomerCard!(); // Shell'de yeni sekme aç
+                    }
+                    return;
+                  }
+
+                  // 🔹 Eğer L2 = Müşteri Yönetimi ve L3 = "Müşteri Listesi" ise:
+                  if (section.id == 'musteri' && f.id == 'musteri-liste') {
+                    if (widget.onOpenCustomerList != null) {
+                      widget.onOpenCustomerList!(); // Shell'de yeni sekme aç
                     }
                     return;
                   }
@@ -401,7 +426,7 @@ class _L2Section {
 class _Feature {
   final String id;
   final String
-  sectionId; // hangi L2'ye ait (musteri, tedarikci, crm, finans...)
+      sectionId; // hangi L2'ye ait (musteri, tedarikci, crm, finans...)
   final String title;
   final String description;
   final String group; // etiket (Müşteri, Tedarikçi, CRM, Finans, ...)
@@ -1233,9 +1258,8 @@ class _L2CardState extends State<_L2Card> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _hover
-                  ? s.color.withOpacity(0.35)
-                  : const Color(0xFFE5E7EB),
+              color:
+                  _hover ? s.color.withOpacity(0.35) : const Color(0xFFE5E7EB),
             ),
             boxShadow: [
               if (_hover)
@@ -1343,9 +1367,8 @@ class _FeatureCardState extends State<_FeatureCard> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: _hover
-                  ? f.color.withOpacity(0.35)
-                  : const Color(0xFFE5E7EB),
+              color:
+                  _hover ? f.color.withOpacity(0.35) : const Color(0xFFE5E7EB),
             ),
             boxShadow: [
               if (_hover)

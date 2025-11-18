@@ -1,0 +1,846 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+/// Müşteri Listesi Sayfası - SAP/Oracle/Logo tarzı modern liste görünümü
+class CustomerListPage extends StatefulWidget {
+  final Function(String? customerId)? onOpenCustomerCard;
+
+  const CustomerListPage({super.key, this.onOpenCustomerCard});
+
+  @override
+  State<CustomerListPage> createState() => _CustomerListPageState();
+}
+
+class _CustomerListPageState extends State<CustomerListPage> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+  String _filterStatus = 'Tümü'; // Tümü, Aktif, Pasif, Blokeli
+  String _filterType = 'Tümü'; // Tümü, Perakende, Kurumsal, Kamu
+  String _sortBy = 'Kod'; // Kod, Ad, Şehir, Bakiye
+  int? _hoveredRowIndex;
+
+  // Sütun flex değerleri (SAP/Logo tarzı dinamik genişlik)
+  final List<double> _columnFlex = [
+    1.5, // Cari Kodu
+    2.5, // Ünvan
+    3.0, // Adres
+    2.0, // Mail
+    1.8, // Telefon
+    1.6, // Vergi No
+    1.5, // Alacak
+    1.5, // Borç
+    1.5, // Bakiye
+    1.3, // İşlemler
+  ];
+
+  // Tutar formatlayıcı (binlik ayırıcı + 2 decimal)
+  String _formatCurrency(num value) {
+    final formatter = NumberFormat('#,##0.00', 'tr_TR');
+    return '${formatter.format(value)} ₺';
+  }
+
+  // Demo müşteri verileri
+  final List<Map<String, dynamic>> _customers = [
+    {
+      'code': 'C-0001',
+      'name': 'ABC Ticaret A.Ş.',
+      'address': 'Şeker Mah. Atatürk Cad. No:15, Kadıköy',
+      'city': 'İstanbul',
+      'district': 'Kadıköy',
+      'type': 'Kurumsal',
+      'status': 'Aktif',
+      'taxNo': '1234567890',
+      'debit': 125000.50,
+      'credit': 0.00,
+      'balance': 125000.50,
+      'phone': '0(216) 555 12 34',
+      'email': 'info@abcticaret.com',
+      'blocked': false,
+    },
+    {
+      'code': 'C-0002',
+      'name': 'XYZ Ltd. Şti.',
+      'address': 'Kızılay Meydanı No:25, Çankaya',
+      'city': 'Ankara',
+      'district': 'Çankaya',
+      'type': 'Perakende',
+      'status': 'Aktif',
+      'taxNo': '2345678901',
+      'debit': 0.00,
+      'credit': 45000.00,
+      'balance': -45000.00,
+      'phone': '0(312) 444 56 78',
+      'email': 'xyz@example.com',
+      'blocked': false,
+    },
+    {
+      'code': 'C-0003',
+      'name': 'DEF Gıda San. Tic.',
+      'address': 'Alsancak Mah. Kıbrıs Şehitleri Cad. No:123',
+      'city': 'İzmir',
+      'district': 'Konak',
+      'type': 'Kurumsal',
+      'status': 'Aktif',
+      'taxNo': '3456789012',
+      'debit': 78500.25,
+      'credit': 0.00,
+      'balance': 78500.25,
+      'phone': '0(232) 789 01 23',
+      'email': 'def@gida.com.tr',
+      'blocked': true,
+    },
+    {
+      'code': 'C-0004',
+      'name': 'Ahmet Yılmaz',
+      'address': 'Fethiye Mah. Hürriyet Sok. No:8/3',
+      'city': 'Bursa',
+      'district': 'Osmangazi',
+      'type': 'Perakende',
+      'status': 'Pasif',
+      'taxNo': '12345678901',
+      'debit': 0.00,
+      'credit': 0.00,
+      'balance': 0.00,
+      'phone': '0(224) 333 44 55',
+      'email': 'ahmet@example.com',
+      'blocked': false,
+    },
+    {
+      'code': 'C-0005',
+      'name': 'MNO Yapı İnşaat',
+      'address': 'Lara Yolu Üzerı Toprak Mah. No:456',
+      'city': 'Antalya',
+      'district': 'Muratpaşa',
+      'type': 'Kurumsal',
+      'status': 'Aktif',
+      'taxNo': '5678901234',
+      'debit': 350000.00,
+      'credit': 100000.00,
+      'balance': 250000.00,
+      'phone': '0(242) 666 77 88',
+      'email': 'info@mnoyapi.com',
+      'blocked': false,
+    },
+    {
+      'code': 'C-0006',
+      'name': 'PQR Elektronik',
+      'address': 'Adem Yavuz Cad. Teknokent Sitesi A Blok',
+      'city': 'İstanbul',
+      'district': 'Ümraniye',
+      'type': 'Kurumsal',
+      'status': 'Aktif',
+      'taxNo': '6789012345',
+      'debit': 95000.75,
+      'credit': 0.00,
+      'balance': 95000.75,
+      'phone': '0(216) 111 22 33',
+      'email': 'pqr@elektronik.com',
+      'blocked': false,
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() => _searchQuery = _searchController.text.toLowerCase());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Map<String, dynamic>> get _filteredCustomers {
+    return _customers.where((customer) {
+      // Arama filtresi
+      if (_searchQuery.isNotEmpty) {
+        final searchLower = _searchQuery;
+        final matchesSearch = customer['code']
+                .toString()
+                .toLowerCase()
+                .contains(searchLower) ||
+            customer['name'].toString().toLowerCase().contains(searchLower) ||
+            customer['city'].toString().toLowerCase().contains(searchLower);
+        if (!matchesSearch) return false;
+      }
+
+      // Durum filtresi
+      if (_filterStatus != 'Tümü') {
+        if (_filterStatus == 'Blokeli' && !customer['blocked']) return false;
+        if (_filterStatus != 'Blokeli' && customer['status'] != _filterStatus)
+          return false;
+      }
+
+      // Tip filtresi
+      if (_filterType != 'Tümü' && customer['type'] != _filterType) {
+        return false;
+      }
+
+      return true;
+    }).toList()
+      ..sort((a, b) {
+        switch (_sortBy) {
+          case 'Ad':
+            return a['name']
+                .toString()
+                .toLowerCase()
+                .compareTo(b['name'].toString().toLowerCase());
+          case 'Şehir':
+            return a['city']
+                .toString()
+                .toLowerCase()
+                .compareTo(b['city'].toString().toLowerCase());
+          case 'Bakiye':
+            return (b['balance'] as num).compareTo(a['balance'] as num);
+          case 'Kod':
+          default:
+            return a['code']
+                .toString()
+                .toLowerCase()
+                .compareTo(b['code'].toString().toLowerCase());
+        }
+      });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredList = _filteredCustomers;
+
+    return Column(
+      children: [
+        _buildToolbar(),
+        const SizedBox(height: 16),
+        _buildFiltersBar(),
+        const SizedBox(height: 16),
+        Expanded(child: _buildCustomerList(filteredList)),
+      ],
+    );
+  }
+
+  Widget _buildToolbar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: const Color(0xFFE5E7EB), width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Arama kutusu
+          Expanded(
+            flex: 2,
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Kod, ad veya şehir ile ara...',
+                hintStyle: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF9CA3AF),
+                ),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: Color(0xFF6B7280),
+                  size: 20,
+                ),
+                filled: true,
+                fillColor: const Color(0xFFF9FAFB),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFE5E7EB),
+                    width: 1.5,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFE5E7EB),
+                    width: 1.5,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF3B82F6),
+                    width: 2,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Yeni Müşteri butonu
+          ElevatedButton.icon(
+            onPressed: () => widget.onOpenCustomerCard?.call(null),
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Yeni Müşteri'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3B82F6),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              elevation: 0,
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Excel Export butonu
+          OutlinedButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.file_download, size: 18),
+            label: const Text('Excel'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF059669),
+              side: const BorderSide(color: Color(0xFF059669)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFiltersBar() {
+    final filteredList = _filteredCustomers;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        children: [
+          // Durum filtresi
+          _buildFilterDropdown(
+            'Durum',
+            _filterStatus,
+            ['Tümü', 'Aktif', 'Pasif', 'Blokeli'],
+            (val) => setState(() => _filterStatus = val!),
+          ),
+          const SizedBox(width: 12),
+          // Tip filtresi
+          _buildFilterDropdown(
+            'Tip',
+            _filterType,
+            ['Tümü', 'Perakende', 'Kurumsal', 'Kamu'],
+            (val) => setState(() => _filterType = val!),
+          ),
+          const SizedBox(width: 12),
+          // Sıralama
+          _buildFilterDropdown(
+            'Sırala',
+            _sortBy,
+            ['Kod', 'Ad', 'Şehir', 'Bakiye'],
+            (val) => setState(() => _sortBy = val!),
+          ),
+          const Spacer(),
+          // Toplam kayıt sayısı
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              '${filteredList.length} / ${_customers.length} müşteri',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF374151),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterDropdown(
+    String label,
+    String value,
+    List<String> items,
+    void Function(String?) onChanged,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$label:',
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xFF6B7280),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 8),
+          DropdownButton<String>(
+            value: value,
+            underline: const SizedBox(),
+            items: items.map((item) {
+              return DropdownMenuItem(
+                value: item,
+                child: Text(
+                  item,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomerList(List<Map<String, dynamic>> customers) {
+    if (customers.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 64,
+              color: const Color(0xFF9CA3AF),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Müşteri bulunamadı',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF6B7280),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Tablo başlığı
+          _buildTableHeader(),
+          const Divider(height: 1, color: Color(0xFFE5E7EB)),
+          // Tablo satırları
+          Expanded(
+            child: ListView.builder(
+              itemCount: customers.length,
+              itemBuilder: (context, index) {
+                final customer = customers[index];
+                return _buildCustomerRow(customer, index);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableHeader() {
+    final headers = [
+      ('Cari Kodu', Alignment.centerLeft),
+      ('Ünvan', Alignment.centerLeft),
+      ('Adres', Alignment.centerLeft),
+      ('Mail', Alignment.centerLeft),
+      ('Telefon', Alignment.centerLeft),
+      ('Vergi No', Alignment.centerLeft),
+      ('Alacak (TL)', Alignment.centerRight),
+      ('Borç (TL)', Alignment.centerRight),
+      ('Bakiye (TL)', Alignment.centerRight),
+      ('İşlemler', Alignment.center),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBFBFD),
+        border: const Border(
+          bottom: BorderSide(color: Color(0xFFE5E7EB), width: 0.5),
+        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      child: Row(
+        children: [
+          for (int i = 0; i < headers.length; i++) ...[
+            _buildHeaderCell(headers[i].$1, i, headers[i].$2),
+            if (i < headers.length - 1) _buildResizer(i),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderCell(String text, int index, Alignment alignment) {
+    return Expanded(
+      flex: (_columnFlex[index] * 100).toInt(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Align(
+          alignment: alignment,
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF6B7280),
+              letterSpacing: -0.2,
+              height: 1.3,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResizer(int index) {
+    return SizedBox(
+      width: 20,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.resizeColumn,
+        child: GestureDetector(
+          onHorizontalDragUpdate: (details) {
+            setState(() {
+              // SAP/Logo tarzı: bir sütun büyürken sağındaki küçülür
+              final delta = details.delta.dx * 0.01; // hassasiyet
+              final newFlex = (_columnFlex[index] + delta).clamp(0.5, 6.0);
+              final nextIndex = index + 1;
+
+              if (nextIndex < _columnFlex.length - 1) {
+                final nextNewFlex =
+                    (_columnFlex[nextIndex] - delta).clamp(0.5, 6.0);
+                _columnFlex[index] = newFlex;
+                _columnFlex[nextIndex] = nextNewFlex;
+              }
+            });
+          },
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  const Color(0xFF2563EB).withOpacity(0.05),
+                  Colors.transparent,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: Center(
+              child: Container(
+                width: 2,
+                height: 24,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFBFDBFE), Color(0xFF93C5FD)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF2563EB).withOpacity(0.2),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCell(int index, Widget child) {
+    return Expanded(
+      flex: (_columnFlex[index] * 100).toInt(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildCustomerRow(Map<String, dynamic> customer, int index) {
+    final isBlocked = customer['blocked'] == true;
+    final balance = customer['balance'] as num;
+    final debit = customer['debit'] as num;
+    final credit = customer['credit'] as num;
+    final isDebit = balance < 0;
+    final isHovered = _hoveredRowIndex == index;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hoveredRowIndex = index),
+      onExit: (_) => setState(() => _hoveredRowIndex = null),
+      child: InkWell(
+        onTap: () => widget.onOpenCustomerCard?.call(customer['code']),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          decoration: BoxDecoration(
+            color: isHovered
+                ? const Color(0xFFF5F8FF)
+                : (index % 2 == 0 ? Colors.white : const Color(0xFFFBFBFD)),
+            border: const Border(
+              bottom: BorderSide(
+                color: Color(0xFFF0F0F0),
+                width: 0.5,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              // Cari Kodu
+              _buildCell(
+                0,
+                Text(
+                  customer['code'],
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: isHovered
+                        ? const Color(0xFF1D4ED8)
+                        : const Color(0xFF2563EB),
+                    letterSpacing: 0.3,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Ünvan
+              _buildCell(
+                1,
+                Row(
+                  children: [
+                    if (isBlocked)
+                      const Padding(
+                        padding: EdgeInsets.only(right: 6),
+                        child: Icon(
+                          Icons.block,
+                          size: 14,
+                          color: Color(0xFFEF4444),
+                        ),
+                      ),
+                    Expanded(
+                      child: Text(
+                        customer['name'],
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isBlocked
+                              ? const Color(0xFFDC2626)
+                              : const Color(0xFF1F2937),
+                          letterSpacing: -0.3,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Adres
+              _buildCell(
+                2,
+                Text(
+                  customer['address'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF6B7280),
+                    letterSpacing: -0.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Mail
+              _buildCell(
+                3,
+                Text(
+                  customer['email'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF6B7280),
+                    letterSpacing: -0.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Telefon
+              _buildCell(
+                4,
+                Text(
+                  customer['phone'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF6B7280),
+                    letterSpacing: -0.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Vergi No
+              _buildCell(
+                5,
+                Text(
+                  customer['taxNo'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF374151),
+                    letterSpacing: -0.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Alacak
+              _buildCell(
+                6,
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    _formatCurrency(debit),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF059669),
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+              ),
+              // Borç
+              _buildCell(
+                7,
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    _formatCurrency(credit),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFEF4444),
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+              ),
+              // Bakiye
+              _buildCell(
+                8,
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    _formatCurrency(balance),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDebit
+                          ? const Color(0xFFEF4444)
+                          : const Color(0xFF059669),
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+              ),
+              // İşlemler
+              _buildCell(
+                9,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () =>
+                            widget.onOpenCustomerCard?.call(customer['code']),
+                        borderRadius: BorderRadius.circular(8),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: isHovered
+                                ? const Color(0xFF2563EB).withOpacity(0.08)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.edit_outlined,
+                            size: 17,
+                            color: Color(0xFF2563EB),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {},
+                        borderRadius: BorderRadius.circular(8),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: isHovered
+                                ? const Color(0xFF6B7280).withOpacity(0.08)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.visibility_outlined,
+                            size: 17,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

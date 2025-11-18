@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../features/dashboard/dashboard_page.dart';
 import '../features/customers/customers_page.dart';
 import '../features/customers/customer_card_page.dart';
+import '../features/customers/customer_list_page.dart';
 
 class ERPlusShell extends StatefulWidget {
   const ERPlusShell({super.key});
@@ -66,8 +67,10 @@ class _ERPlusShellState extends State<ERPlusShell> {
         builder = (ctx) => const DashboardPage();
         break;
       case 1:
-        builder = (ctx) =>
-            CustomersPage(onOpenCustomerCard: _openCustomerCardTab);
+        builder = (ctx) => CustomersPage(
+              onOpenCustomerCard: _openCustomerCardTab,
+              onOpenCustomerList: _openCustomerListTab,
+            );
         break;
       default:
         builder = (ctx) => _PlaceholderPage(title: menu.label);
@@ -123,6 +126,29 @@ class _ERPlusShellState extends State<ERPlusShell> {
   }
 
   void _closeCustomerCardTab() => _closeTab('customer_card');
+
+  void _openCustomerListTab() {
+    const id = 'customer_list';
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: Icons.list_alt_rounded,
+          label: 'Müşteri Listesi',
+          builder: (ctx) => CustomerListPage(
+            onOpenCustomerCard: (customerId) => _openCustomerCardTab(),
+          ),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 1; // Cari modülü
+    });
+  }
 
   void _closeTab(String id) {
     final index = _tabs.indexWhere((t) => t.id == id);
@@ -542,9 +568,8 @@ class _ERPlusShellState extends State<ERPlusShell> {
                       tab.label,
                       style: TextStyle(
                         fontSize: 12.5,
-                        fontWeight: isActive
-                            ? FontWeight.w600
-                            : FontWeight.w500,
+                        fontWeight:
+                            isActive ? FontWeight.w600 : FontWeight.w500,
                         color: isActive
                             ? const Color(0xFF1D1D1F)
                             : const Color(0xFF86868B),
@@ -619,56 +644,104 @@ class _ERPlusShellState extends State<ERPlusShell> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Logo - Apple Style Dark
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+        // Premium Full-Width Header - Apple Style
+        Container(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF2563EB).withOpacity(0.12),
+                const Color(0xFF38BDF8).withOpacity(0.08),
+                Colors.white.withOpacity(0.03),
+              ],
+            ),
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.white.withOpacity(0.15),
+                width: 1,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
           child: Row(
             children: [
+              // Logo
               Container(
-                width: 40,
-                height: 40,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFF2563EB), Color(0xFF38BDF8)],
+                    colors: [
+                      Color(0xFF2563EB),
+                      Color(0xFF38BDF8),
+                      Color(0xFF60C4FF),
+                    ],
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFF2563EB).withOpacity(0.4),
-                      blurRadius: 12,
+                      blurRadius: 16,
+                      spreadRadius: 1,
                       offset: const Offset(0, 4),
                     ),
+                    BoxShadow(
+                      color: const Color(0xFF38BDF8).withOpacity(0.3),
+                      blurRadius: 24,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 8),
+                    ),
                   ],
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.2),
+                    width: 1.5,
+                  ),
                 ),
                 child: const Icon(
                   Icons.auto_awesome_rounded,
-                  size: 22,
+                  size: 26,
                   color: Colors.white,
                 ),
               ),
               const SizedBox(width: 12),
-              const Column(
+              // Başlık ve Slogan
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'ERPlus',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.3,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.6,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 1),
                   Text(
                     'Kurumsal Yönetim',
                     style: TextStyle(
-                      color: Colors.white60,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: -0.1,
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.4,
                     ),
                   ),
                 ],
@@ -677,9 +750,151 @@ class _ERPlusShellState extends State<ERPlusShell> {
           ),
         ),
 
-        // İnce ayırıcı çizgi - Apple style
+        // Kompakt Kullanıcı Profil Paneli
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 6, 12, 4),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.08),
+                  Colors.white.withOpacity(0.04),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.15),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: const Color(0xFF2563EB).withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    // Avatar - Kullanıcı
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFF2563EB),
+                            Color(0xFF38BDF8),
+                            Color(0xFF60C4FF),
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF2563EB).withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 3),
+                          ),
+                          BoxShadow(
+                            color: const Color(0xFF38BDF8).withOpacity(0.2),
+                            blurRadius: 20,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.25),
+                          width: 2,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.person_rounded,
+                        size: 24,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Kullanıcı Bilgisi
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Selman',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Admin',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 1),
+                          Text(
+                            '192.168.1.100',
+                            style: TextStyle(
+                              color: Colors.white38,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                // Aksiyon Butonları
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildActionButton(
+                      icon: Icons.notifications_rounded,
+                      hasNotification: true,
+                      onTap: () {},
+                    ),
+                    _buildActionButton(
+                      icon: Icons.mail_rounded,
+                      hasNotification: true,
+                      onTap: () {},
+                    ),
+                    _buildActionButton(
+                      icon: Icons.person_rounded,
+                      onTap: () {},
+                    ),
+                    _buildActionButton(
+                      icon: Icons.logout_rounded,
+                      onTap: () {},
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Ayırıcı çizgi
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
           height: 0.5,
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -694,7 +909,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
 
         // Modüller başlığı
         const Padding(
-          padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
+          padding: EdgeInsets.fromLTRB(16, 6, 16, 3),
           child: Text(
             'MODÜLLER',
             style: TextStyle(
@@ -709,7 +924,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
         // Menü listesi
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
             itemCount: _menuItems.length,
             itemBuilder: (context, index) {
               final item = _menuItems[index];
@@ -719,9 +934,9 @@ class _ERPlusShellState extends State<ERPlusShell> {
           ),
         ),
 
-        // Alt ayırıcı
+        // Footer separator
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
           height: 0.5,
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -734,95 +949,9 @@ class _ERPlusShellState extends State<ERPlusShell> {
           ),
         ),
 
-        // Alt profil - Apple Style Dark
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                  width: 0.5,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF2563EB), Color(0xFF38BDF8)],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF2563EB).withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.person_rounded,
-                      size: 20,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Selman',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.1,
-                          ),
-                        ),
-                        Text(
-                          'Admin',
-                          style: TextStyle(
-                            color: Colors.white54,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Icon(
-                        Icons.settings_rounded,
-                        size: 16,
-                        color: Colors.white54,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-
         // Alt bilgi
         const Padding(
-          padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: EdgeInsets.fromLTRB(16, 4, 16, 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -857,7 +986,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
     bool isDrawer,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 4),
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
@@ -868,7 +997,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
               color: selected
                   ? Colors.white.withOpacity(0.1) // Apple dark aktif bg
@@ -885,23 +1014,23 @@ class _ERPlusShellState extends State<ERPlusShell> {
               children: [
                 // Icon container
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     color: selected
                         ? const Color(0xFF38BDF8).withOpacity(0.15)
                         : Colors.white.withOpacity(0.03),
-                    borderRadius: BorderRadius.circular(9),
+                    borderRadius: BorderRadius.circular(7),
                   ),
                   child: Icon(
                     item.icon,
-                    size: 20,
+                    size: 18,
                     color: selected
                         ? const Color(0xFF38BDF8)
                         : Colors.white.withOpacity(0.7),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     item.label,
@@ -909,7 +1038,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
                       color: selected
                           ? Colors.white
                           : Colors.white.withOpacity(0.82),
-                      fontSize: 13,
+                      fontSize: 12.5,
                       fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                       letterSpacing: -0.08,
                     ),
@@ -920,11 +1049,83 @@ class _ERPlusShellState extends State<ERPlusShell> {
                 if (selected)
                   const Icon(
                     Icons.chevron_right_rounded,
-                    size: 18,
+                    size: 16,
                     color: Color(0xFF38BDF8),
                   ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Premium aksiyon butonları
+  Widget _buildActionButton({
+    required IconData icon,
+    bool hasNotification = false,
+    required VoidCallback onTap,
+  }) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+              width: 0.5,
+            ),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: Colors.white.withOpacity(0.85),
+              ),
+              if (hasNotification)
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: const Duration(milliseconds: 1500),
+                    curve: Curves.easeInOut,
+                    builder: (context, value, child) {
+                      return Transform.scale(
+                        scale: 0.8 + (value * 0.2),
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFF34C759),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF34C759).withOpacity(0.6),
+                                blurRadius: 4,
+                                spreadRadius: value * 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    onEnd: () {
+                      // Sonsuz animasyon için tekrar başlat
+                      if (mounted) {
+                        setState(() {});
+                      }
+                    },
+                  ),
+                ),
+            ],
           ),
         ),
       ),
