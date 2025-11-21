@@ -63,8 +63,6 @@ class _CustomersPageState extends State<CustomersPage> with PageLoadingMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeaderCard(),
-          const SizedBox(height: 16),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 260),
@@ -78,84 +76,6 @@ class _CustomersPageState extends State<CustomersPage> with PageLoadingMixin {
                           .where((f) => f.sectionId == _activeSection!.id)
                           .toList(),
                     ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // === ÜST BAŞLIK KARTI =====================================================
-  Widget _buildHeaderCard() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-      padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xCCFFFFFF), Color(0xB0F9FAFB)],
-        ),
-        border: Border.all(color: Colors.white70),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: const LinearGradient(
-                colors: [Color(0xFF38BDF8), Color(0xFF6366F1)],
-              ),
-            ),
-            child: const Icon(
-              Icons.account_tree_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
-                'Cari Hesap Yönetimi',
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                'Müşteri ve tedarikçi tüm cari hesap fonksiyonlarına tek merkezden erişin.',
-                style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE0F2FE),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: const Text(
-              'L2 & L3 menü haritası',
-              style: TextStyle(
-                fontSize: 11,
-                color: Color(0xFF1D4ED8),
-                fontWeight: FontWeight.w500,
-              ),
             ),
           ),
         ],

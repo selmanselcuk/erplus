@@ -2189,28 +2189,28 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               vertical: 13,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                 color: const Color(0xFFCBD5E1),
                 width: 1.5,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                 color: const Color(0xFFCBD5E1),
                 width: 1.5,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                 color: const Color(0xFF3498DB),
                 width: 2,
               ),
             ),
             disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: Color(0xFFE2E8F0),
                 width: 1.5,
@@ -2267,35 +2267,35 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               vertical: 13,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                 color: const Color(0xFFCBD5E1),
                 width: 1.5,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                 color: const Color(0xFFCBD5E1),
                 width: 1.5,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: Color(0xFF2563EB),
                 width: 2,
               ),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: Color(0xFFEF4444),
                 width: 1.5,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: Color(0xFFEF4444),
                 width: 2,
@@ -2345,21 +2345,21 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               vertical: 13,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: Color(0xFFCBD5E1),
                 width: 1.5,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: Color(0xFFCBD5E1),
                 width: 1.5,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: Color(0xFF2563EB),
                 width: 2,
@@ -2424,21 +2424,21 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               tooltip: 'Ara',
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: Color(0xFFCBD5E1),
                 width: 1.5,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: Color(0xFFCBD5E1),
                 width: 1.5,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: Color(0xFF2563EB),
                 width: 2,
@@ -2526,11 +2526,36 @@ class _TaxOfficeSearchDialogState extends State<_TaxOfficeSearchDialog> {
             const SizedBox(height: 16),
             TextField(
               controller: _searchController,
+              autofocus: true,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
               decoration: InputDecoration(
                 hintText: 'Kod veya vergi dairesi adı ile arayın...',
-                prefixIcon: const Icon(Icons.search),
+                hintStyle: const TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 14,
+                ),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF2563EB)),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide:
+                      const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide:
+                      const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide:
+                      const BorderSide(color: Color(0xFF2563EB), width: 2),
                 ),
               ),
             ),
@@ -2971,15 +2996,17 @@ class _SectorCodeSearchDialogState extends State<_SectorCodeSearchDialog> {
                   fontWeight: FontWeight.w500,
                 ),
                 decoration: InputDecoration(
-                  labelText: 'Arama (en az 3 karakter)',
-                  labelStyle: const TextStyle(
-                    color: Color(0xFF64748B),
+                  hintText: 'Arama (en az 3 karakter)',
+                  hintStyle: const TextStyle(
+                    color: Color(0xFF94A3B8),
                     fontSize: 14,
                   ),
                   prefixIcon:
                       const Icon(Icons.search, color: Color(0xFF2563EB)),
                   filled: true,
                   fillColor: Colors.white,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide:
@@ -3221,11 +3248,36 @@ class _AddressSearchDialogState extends State<_AddressSearchDialog> {
             const SizedBox(height: 16),
             TextField(
               controller: _searchController,
+              autofocus: true,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
               decoration: InputDecoration(
                 hintText: 'En az 3 harf yazarak arayın...',
-                prefixIcon: const Icon(Icons.search),
+                hintStyle: const TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 14,
+                ),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF2563EB)),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide:
+                      const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide:
+                      const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide:
+                      const BorderSide(color: Color(0xFF2563EB), width: 2),
                 ),
               ),
             ),

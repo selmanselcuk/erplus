@@ -6,6 +6,17 @@ import '../features/customers/customer_card_page.dart';
 import '../features/customers/customer_list_page.dart';
 import '../features/customers/customer_360_page.dart';
 import '../features/inventory/inventory_page.dart';
+import '../features/sales/sales_page.dart';
+import '../features/purchasing/purchasing_page.dart';
+import '../features/finance/finance_page.dart';
+import '../features/projects/projects_page.dart';
+import '../features/hr/hr_page.dart';
+import '../features/service/service_page.dart';
+import '../features/crm/crm_page.dart';
+import '../features/reports/reports_page.dart';
+import '../features/integration/integration_page.dart';
+import '../features/compliance/compliance_page.dart';
+import '../features/settings/settings_page.dart';
 
 class ERPlusShell extends StatefulWidget {
   const ERPlusShell({super.key});
@@ -39,6 +50,442 @@ class _ERPlusShellState extends State<ERPlusShell> {
   /// Şu anda aktif olan sekme id’si (null = boş hoş geldiniz ekranı)
   String? _activeTabId;
 
+  // ---------------------------------------------------------------------------
+  //  MODÜL LİSTELERİ (L2/L3)
+  // ---------------------------------------------------------------------------
+
+  static const _salesModules = [
+    _ModuleCard(
+      icon: Icons.description_outlined,
+      label: 'Teklif Yönetimi',
+      color: Color(0xFF3B82F6),
+      subCount: 8,
+      id: 'teklif',
+    ),
+    _ModuleCard(
+      icon: Icons.shopping_cart_outlined,
+      label: 'Sipariş Yönetimi',
+      color: Color(0xFF8B5CF6),
+      subCount: 6,
+      id: 'siparis',
+    ),
+    _ModuleCard(
+      icon: Icons.local_shipping_outlined,
+      label: 'Teslimat Yönetimi',
+      color: Color(0xFF06B6D4),
+      subCount: 5,
+      id: 'teslimat',
+    ),
+    _ModuleCard(
+      icon: Icons.receipt_long_outlined,
+      label: 'Fatura Yönetimi',
+      color: Color(0xFF10B981),
+      subCount: 7,
+      id: 'fatura',
+    ),
+    _ModuleCard(
+      icon: Icons.settings_suggest_outlined,
+      label: 'Operasyon Yönetimi',
+      color: Color(0xFFF59E0B),
+      subCount: 4,
+      id: 'operasyon',
+    ),
+    _ModuleCard(
+      icon: Icons.analytics_outlined,
+      label: 'Analitik & Raporlama',
+      color: Color(0xFFEC4899),
+      subCount: 6,
+      id: 'analitik',
+    ),
+  ];
+
+  static const _purchaseModules = [
+    _ModuleCard(
+      icon: Icons.request_quote_outlined,
+      label: 'Talep Yönetimi',
+      color: Color(0xFF3B82F6),
+      subCount: 5,
+      id: 'talep',
+    ),
+    _ModuleCard(
+      icon: Icons.rate_review_outlined,
+      label: 'Teklif Yönetimi',
+      color: Color(0xFF8B5CF6),
+      subCount: 6,
+      id: 'teklif',
+    ),
+    _ModuleCard(
+      icon: Icons.shopping_bag_outlined,
+      label: 'Sipariş Yönetimi',
+      color: Color(0xFF06B6D4),
+      subCount: 7,
+      id: 'siparis',
+    ),
+    _ModuleCard(
+      icon: Icons.inventory_outlined,
+      label: 'Mal Kabul Yönetimi',
+      color: Color(0xFF10B981),
+      subCount: 4,
+      id: 'kabul',
+    ),
+    _ModuleCard(
+      icon: Icons.receipt_outlined,
+      label: 'Fatura Yönetimi',
+      color: Color(0xFFF59E0B),
+      subCount: 5,
+      id: 'fatura',
+    ),
+    _ModuleCard(
+      icon: Icons.bar_chart_outlined,
+      label: 'Analitik & Raporlama',
+      color: Color(0xFFEC4899),
+      subCount: 6,
+      id: 'analitik',
+    ),
+  ];
+
+  static const _financeModules = [
+    _ModuleCard(
+      icon: Icons.account_balance_wallet_outlined,
+      label: 'Kasa Yönetimi',
+      color: Color(0xFF3B82F6),
+      subCount: 6,
+      id: 'kasa',
+    ),
+    _ModuleCard(
+      icon: Icons.account_balance_outlined,
+      label: 'Banka Yönetimi',
+      color: Color(0xFF8B5CF6),
+      subCount: 8,
+      id: 'banka',
+    ),
+    _ModuleCard(
+      icon: Icons.receipt_long_outlined,
+      label: 'Çek & Senet Yönetimi',
+      color: Color(0xFF06B6D4),
+      subCount: 7,
+      id: 'cek',
+    ),
+    _ModuleCard(
+      icon: Icons.calendar_today_outlined,
+      label: 'Bütçe & Plan Yönetimi',
+      color: Color(0xFF10B981),
+      subCount: 5,
+      id: 'plan',
+    ),
+    _ModuleCard(
+      icon: Icons.timeline_outlined,
+      label: 'Nakit Akış Yönetimi',
+      color: Color(0xFFF59E0B),
+      subCount: 4,
+      id: 'nakit',
+    ),
+    _ModuleCard(
+      icon: Icons.insights_outlined,
+      label: 'Analitik & Raporlama',
+      color: Color(0xFFEC4899),
+      subCount: 9,
+      id: 'analitik',
+    ),
+  ];
+
+  static const _projectModules = [
+    _ModuleCard(
+      icon: Icons.create_new_folder_outlined,
+      label: 'Proje Oluşturma',
+      color: Color(0xFF3B82F6),
+      subCount: 6,
+      id: 'olusturma',
+    ),
+    _ModuleCard(
+      icon: Icons.event_note_outlined,
+      label: 'Planlama & Takvim',
+      color: Color(0xFF8B5CF6),
+      subCount: 7,
+      id: 'planlama',
+    ),
+    _ModuleCard(
+      icon: Icons.group_outlined,
+      label: 'Kaynak Yönetimi',
+      color: Color(0xFF06B6D4),
+      subCount: 5,
+      id: 'kaynak',
+    ),
+    _ModuleCard(
+      icon: Icons.attach_money_outlined,
+      label: 'Bütçe & Maliyet Yönetimi',
+      color: Color(0xFF10B981),
+      subCount: 6,
+      id: 'butce',
+    ),
+    _ModuleCard(
+      icon: Icons.track_changes_outlined,
+      label: 'Takip & İzleme',
+      color: Color(0xFFF59E0B),
+      subCount: 8,
+      id: 'takip',
+    ),
+    _ModuleCard(
+      icon: Icons.assessment_outlined,
+      label: 'Analitik & Raporlama',
+      color: Color(0xFFEC4899),
+      subCount: 5,
+      id: 'analitik',
+    ),
+  ];
+
+  static const _hrModules = [
+    _ModuleCard(
+      icon: Icons.person_add_outlined,
+      label: 'Personel Yönetimi',
+      color: Color(0xFF3B82F6),
+      subCount: 9,
+      id: 'personel',
+    ),
+    _ModuleCard(
+      icon: Icons.access_time_outlined,
+      label: 'Zaman & Devamsızlık',
+      color: Color(0xFF8B5CF6),
+      subCount: 6,
+      id: 'zaman',
+    ),
+    _ModuleCard(
+      icon: Icons.payments_outlined,
+      label: 'Bordro Yönetimi',
+      color: Color(0xFF06B6D4),
+      subCount: 7,
+      id: 'bordro',
+    ),
+    _ModuleCard(
+      icon: Icons.trending_up_outlined,
+      label: 'Performans Yönetimi',
+      color: Color(0xFF10B981),
+      subCount: 5,
+      id: 'performans',
+    ),
+    _ModuleCard(
+      icon: Icons.school_outlined,
+      label: 'Eğitim & Gelişim',
+      color: Color(0xFFF59E0B),
+      subCount: 4,
+      id: 'egitim',
+    ),
+    _ModuleCard(
+      icon: Icons.work_outline,
+      label: 'İşe Alım & Onboarding',
+      color: Color(0xFFEC4899),
+      subCount: 6,
+      id: 'iseAlim',
+    ),
+  ];
+
+  static const _serviceModules = [
+    _ModuleCard(
+      icon: Icons.confirmation_number_outlined,
+      label: 'Talep & Ticket Yönetimi',
+      color: Color(0xFF3B82F6),
+      subCount: 7,
+      id: 'ticket',
+    ),
+    _ModuleCard(
+      icon: Icons.support_agent_outlined,
+      label: 'Saha Servis Yönetimi',
+      color: Color(0xFF8B5CF6),
+      subCount: 6,
+      id: 'saha',
+    ),
+    _ModuleCard(
+      icon: Icons.build_outlined,
+      label: 'Bakım & Onarım Yönetimi',
+      color: Color(0xFF06B6D4),
+      subCount: 5,
+      id: 'bakim',
+    ),
+    _ModuleCard(
+      icon: Icons.shield_outlined,
+      label: 'Garanti & Kontrat Yönetimi',
+      color: Color(0xFF10B981),
+      subCount: 4,
+      id: 'garanti',
+    ),
+    _ModuleCard(
+      icon: Icons.devices_outlined,
+      label: 'Ekipman & Varlık Yönetimi',
+      color: Color(0xFFF59E0B),
+      subCount: 6,
+      id: 'ekipman',
+    ),
+    _ModuleCard(
+      icon: Icons.speed_outlined,
+      label: 'SLA & Performans İzleme',
+      color: Color(0xFFEC4899),
+      subCount: 5,
+      id: 'sla',
+    ),
+  ];
+
+  static const _crmModules = [
+    _ModuleCard(
+      icon: Icons.person_search_outlined,
+      label: 'Fırsat Yönetimi',
+      color: Color(0xFF3B82F6),
+      subCount: 6,
+      id: 'firsat',
+    ),
+    _ModuleCard(
+      icon: Icons.campaign_outlined,
+      label: 'Kampanya Yönetimi',
+      color: Color(0xFF8B5CF6),
+      subCount: 5,
+      id: 'kampanya',
+    ),
+    _ModuleCard(
+      icon: Icons.call_outlined,
+      label: 'Aktivite Yönetimi',
+      color: Color(0xFF06B6D4),
+      subCount: 7,
+      id: 'aktivite',
+    ),
+    _ModuleCard(
+      icon: Icons.star_outline,
+      label: 'Sadakat & Bağlılık',
+      color: Color(0xFF10B981),
+      subCount: 4,
+      id: 'sadakat',
+    ),
+    _ModuleCard(
+      icon: Icons.show_chart_outlined,
+      label: 'Analitik & Raporlama',
+      color: Color(0xFFEC4899),
+      subCount: 8,
+      id: 'analitik',
+    ),
+  ];
+
+  static const _reportingModules = [
+    _ModuleCard(
+      icon: Icons.dashboard_customize_outlined,
+      label: 'Dashboard Yönetimi',
+      color: Color(0xFF3B82F6),
+      subCount: 5,
+      id: 'dashboard',
+    ),
+    _ModuleCard(
+      icon: Icons.list_alt_outlined,
+      label: 'Standart Raporlar',
+      color: Color(0xFF8B5CF6),
+      subCount: 12,
+      id: 'standart',
+    ),
+    _ModuleCard(
+      icon: Icons.tune_outlined,
+      label: 'Özel Rapor Editörü',
+      color: Color(0xFF06B6D4),
+      subCount: 8,
+      id: 'ozel',
+    ),
+  ];
+
+  static const _integrationModules = [
+    _ModuleCard(
+      icon: Icons.api_outlined,
+      label: 'API Yönetimi',
+      color: Color(0xFF3B82F6),
+      subCount: 4,
+      id: 'api',
+    ),
+    _ModuleCard(
+      icon: Icons.email_outlined,
+      label: 'E-posta Entegrasyonu',
+      color: Color(0xFF8B5CF6),
+      subCount: 3,
+      id: 'eposta',
+    ),
+    _ModuleCard(
+      icon: Icons.shopping_cart_outlined,
+      label: 'E-ticaret Entegrasyonu',
+      color: Color(0xFF06B6D4),
+      subCount: 5,
+      id: 'eticaret',
+    ),
+    _ModuleCard(
+      icon: Icons.receipt_outlined,
+      label: 'E-Fatura/Arşiv',
+      color: Color(0xFF10B981),
+      subCount: 4,
+      id: 'efatura',
+    ),
+    _ModuleCard(
+      icon: Icons.storage_outlined,
+      label: 'Veri İçe/Dışa Aktarma',
+      color: Color(0xFFF59E0B),
+      subCount: 6,
+      id: 'veri',
+    ),
+  ];
+
+  static const _complianceModules = [
+    _ModuleCard(
+      icon: Icons.policy_outlined,
+      label: 'KVKK Yönetimi',
+      color: Color(0xFF3B82F6),
+      subCount: 5,
+      id: 'kvkk',
+    ),
+    _ModuleCard(
+      icon: Icons.security_outlined,
+      label: 'Denetim & Loglama',
+      color: Color(0xFF8B5CF6),
+      subCount: 6,
+      id: 'denetim',
+    ),
+    _ModuleCard(
+      icon: Icons.verified_user_outlined,
+      label: 'Yetkilendirme & Roller',
+      color: Color(0xFF06B6D4),
+      subCount: 4,
+      id: 'yetkilendirme',
+    ),
+  ];
+
+  static const _settingsModules = [
+    _ModuleCard(
+      icon: Icons.business_outlined,
+      label: 'Şirket Ayarları',
+      color: Color(0xFF3B82F6),
+      subCount: 8,
+      id: 'sirket',
+    ),
+    _ModuleCard(
+      icon: Icons.people_outlined,
+      label: 'Kullanıcı Yönetimi',
+      color: Color(0xFF8B5CF6),
+      subCount: 5,
+      id: 'kullanici',
+    ),
+    _ModuleCard(
+      icon: Icons.edit_notifications_outlined,
+      label: 'Bildirim Ayarları',
+      color: Color(0xFF06B6D4),
+      subCount: 4,
+      id: 'bildirim',
+    ),
+    _ModuleCard(
+      icon: Icons.language_outlined,
+      label: 'Dil & Bölge Ayarları',
+      color: Color(0xFF10B981),
+      subCount: 3,
+      id: 'dil',
+    ),
+    _ModuleCard(
+      icon: Icons.backup_outlined,
+      label: 'Yedekleme & Geri Yükleme',
+      color: Color(0xFFF59E0B),
+      subCount: 4,
+      id: 'yedekleme',
+    ),
+  ];
+
   static const _menuItems = <_MenuItem>[
     _MenuItem(Icons.space_dashboard_rounded, 'Dashboard'),
     _MenuItem(Icons.groups_rounded, 'Cari Hesap Yönetimi'),
@@ -68,17 +515,50 @@ class _ERPlusShellState extends State<ERPlusShell> {
       case 0:
         builder = (ctx) => const DashboardPage();
         break;
-      case 1:
+      case 1: // Cari
         builder = (ctx) => CustomersPage(
               onOpenCustomerCard: _openCustomerCardTab,
               onOpenCustomerList: _openCustomerListTab,
               onOpenCustomer360: _openCustomer360Tab,
             );
         break;
-      case 2:
+      case 2: // Stok
         builder = (ctx) => InventoryPage(
               onOpenSubModule: _openInventorySubModule,
             );
+        break;
+      case 3: // Satış
+        builder = (ctx) => const SalesPage();
+        break;
+      case 4: // Satın Alma
+        builder = (ctx) => const PurchasingPage();
+        break;
+      case 5: // Finans
+        builder = (ctx) => const FinancePage();
+        break;
+      case 6: // Proje
+        builder = (ctx) => const ProjectsPage();
+        break;
+      case 7: // İK
+        builder = (ctx) => const HrPage();
+        break;
+      case 8: // Servis
+        builder = (ctx) => const ServicePage();
+        break;
+      case 9: // CRM
+        builder = (ctx) => const CrmPage();
+        break;
+      case 10: // Raporlama
+        builder = (ctx) => const ReportsPage();
+        break;
+      case 11: // Entegrasyon
+        builder = (ctx) => const IntegrationPage();
+        break;
+      case 12: // Uyumluluk
+        builder = (ctx) => const CompliancePage();
+        break;
+      case 13: // Ayarlar
+        builder = (ctx) => const SettingsPage();
         break;
       default:
         builder = (ctx) => _PlaceholderPage(title: menu.label);
@@ -91,6 +571,40 @@ class _ERPlusShellState extends State<ERPlusShell> {
       label: menu.label,
       builder: builder,
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  //  TAB SCROLL KONTROLÜ
+  // ---------------------------------------------------------------------------
+
+  /// Tab scroll kontrolü için
+  final ScrollController _tabScrollController = ScrollController();
+
+  /// Aktif sekmeyi görünür alana kaydır
+  void _scrollToActiveTab() {
+    if (_activeTabId == null || _tabs.isEmpty) return;
+
+    final activeIndex = _tabs.indexWhere((tab) => tab.id == _activeTabId);
+    if (activeIndex == -1) return;
+
+    // Eğer scroll controller hazırsa kaydır
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_tabScrollController.hasClients) {
+        // Son sekmeye kaydırmak için maxScrollExtent kullan
+        // Bu, yeni eklenen sekmenin görünür olmasını sağlar
+        _tabScrollController.animateTo(
+          _tabScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabScrollController.dispose();
+    super.dispose();
   }
 
   // ---------------------------------------------------------------------------
@@ -110,6 +624,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
       _selectedMenuIndex = menuIndex;
       _activeTabId = id;
     });
+    _scrollToActiveTab();
   }
 
   void _openCustomerCardTab() {
@@ -131,6 +646,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
       _activeTabId = id;
       _selectedMenuIndex = 1; // Cari modülü
     });
+    _scrollToActiveTab();
   }
 
   void _closeCustomerCardTab() => _closeTab('customer_card');
@@ -156,6 +672,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
       _activeTabId = id;
       _selectedMenuIndex = 1; // Cari modülü
     });
+    _scrollToActiveTab();
   }
 
   void _openCustomer360Tab() {
@@ -177,6 +694,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
       _activeTabId = id;
       _selectedMenuIndex = 1; // Cari modülü
     });
+    _scrollToActiveTab();
   }
 
   void _openInventorySubModule(String subModuleId) {
@@ -229,6 +747,249 @@ class _ERPlusShellState extends State<ERPlusShell> {
     setState(() {
       _activeTabId = id;
       _selectedMenuIndex = 2; // Stok modülü
+    });
+    _scrollToActiveTab();
+  }
+
+  void _openSalesSubModule(String subModuleId) {
+    final id = 'sales_$subModuleId';
+    final card = _salesModules.firstWhere((m) => m.id == subModuleId);
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: card.icon,
+          label: card.label,
+          builder: (ctx) => _PlaceholderPage(title: card.label),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 3;
+    });
+  }
+
+  void _openPurchaseSubModule(String subModuleId) {
+    final id = 'purchase_$subModuleId';
+    final card = _purchaseModules.firstWhere((m) => m.id == subModuleId);
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: card.icon,
+          label: card.label,
+          builder: (ctx) => _PlaceholderPage(title: card.label),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 4;
+    });
+  }
+
+  void _openFinanceSubModule(String subModuleId) {
+    final id = 'finance_$subModuleId';
+    final card = _financeModules.firstWhere((m) => m.id == subModuleId);
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: card.icon,
+          label: card.label,
+          builder: (ctx) => _PlaceholderPage(title: card.label),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 5;
+    });
+  }
+
+  void _openProjectSubModule(String subModuleId) {
+    final id = 'project_$subModuleId';
+    final card = _projectModules.firstWhere((m) => m.id == subModuleId);
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: card.icon,
+          label: card.label,
+          builder: (ctx) => _PlaceholderPage(title: card.label),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 6;
+    });
+  }
+
+  void _openHRSubModule(String subModuleId) {
+    final id = 'hr_$subModuleId';
+    final card = _hrModules.firstWhere((m) => m.id == subModuleId);
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: card.icon,
+          label: card.label,
+          builder: (ctx) => _PlaceholderPage(title: card.label),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 7;
+    });
+  }
+
+  void _openServiceSubModule(String subModuleId) {
+    final id = 'service_$subModuleId';
+    final card = _serviceModules.firstWhere((m) => m.id == subModuleId);
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: card.icon,
+          label: card.label,
+          builder: (ctx) => _PlaceholderPage(title: card.label),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 8;
+    });
+  }
+
+  void _openCRMSubModule(String subModuleId) {
+    final id = 'crm_$subModuleId';
+    final card = _crmModules.firstWhere((m) => m.id == subModuleId);
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: card.icon,
+          label: card.label,
+          builder: (ctx) => _PlaceholderPage(title: card.label),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 9;
+    });
+  }
+
+  void _openReportingSubModule(String subModuleId) {
+    final id = 'reporting_$subModuleId';
+    final card = _reportingModules.firstWhere((m) => m.id == subModuleId);
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: card.icon,
+          label: card.label,
+          builder: (ctx) => _PlaceholderPage(title: card.label),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 10;
+    });
+  }
+
+  void _openIntegrationSubModule(String subModuleId) {
+    final id = 'integration_$subModuleId';
+    final card = _integrationModules.firstWhere((m) => m.id == subModuleId);
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: card.icon,
+          label: card.label,
+          builder: (ctx) => _PlaceholderPage(title: card.label),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 11;
+    });
+  }
+
+  void _openComplianceSubModule(String subModuleId) {
+    final id = 'compliance_$subModuleId';
+    final card = _complianceModules.firstWhere((m) => m.id == subModuleId);
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: card.icon,
+          label: card.label,
+          builder: (ctx) => _PlaceholderPage(title: card.label),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 12;
+    });
+  }
+
+  void _openSettingsSubModule(String subModuleId) {
+    final id = 'settings_$subModuleId';
+    final card = _settingsModules.firstWhere((m) => m.id == subModuleId);
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: card.icon,
+          label: card.label,
+          builder: (ctx) => _PlaceholderPage(title: card.label),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 13;
     });
   }
 
@@ -328,50 +1089,11 @@ class _ERPlusShellState extends State<ERPlusShell> {
       ),
       child: Column(
         children: [
-          // Üst header
-          Container(
-            height: 56,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
-              color: theme.colorScheme.surface,
-              border: Border(bottom: BorderSide(color: theme.dividerColor)),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  _activeTabId == null
-                      ? 'Hoş Geldiniz'
-                      : _tabs.firstWhere((t) => t.id == _activeTabId!).label,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  '• ERPlus',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.search_rounded,
-                    size: 20,
-                    color: Color(0xFF6B7280),
-                  ),
-                  tooltip: 'Ara',
-                ),
-              ],
-            ),
-          ),
-
           // Workspace tabcontrol (sadece sekme varsa göster)
-          if (_tabs.isNotEmpty) _buildWorkspaceTabs(),
+          if (_tabs.isNotEmpty) ...[
+            _buildPageHeader(),
+            _buildWorkspaceTabs(),
+          ],
 
           // İçerik
           Expanded(
@@ -563,6 +1285,197 @@ class _ERPlusShellState extends State<ERPlusShell> {
   }
 
   // ---------------------------------------------------------------------------
+  //  SAYFA BAŞLIĞI (TAB BAR ÜSTÜNDE)
+  // ---------------------------------------------------------------------------
+
+  Widget _buildPageHeader() {
+    if (_activeTabId == null) return const SizedBox.shrink();
+
+    // Aktif sekmenin bilgilerini al
+    final activeTab = _tabs.firstWhere((t) => t.id == _activeTabId);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(16),
+        ),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xCCFFFFFF), Color(0xB0F9FAFB)],
+        ),
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.black.withOpacity(0.06),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: _getHeaderGradient(),
+            ),
+            child: Icon(
+              activeTab.icon,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  activeTab.label,
+                  style: const TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _getPageDescription(),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  LinearGradient _getHeaderGradient() {
+    if (_activeTabId == null) {
+      return const LinearGradient(
+        colors: [Color(0xFF64748B), Color(0xFF334155)],
+      );
+    }
+
+    // Modül index'e göre gradient belirle
+    if (_activeTabId!.startsWith('module_')) {
+      final index =
+          int.tryParse(_activeTabId!.substring('module_'.length)) ?? 0;
+
+      switch (index) {
+        case 1: // Cari Hesap
+          return const LinearGradient(
+            colors: [Color(0xFF38BDF8), Color(0xFF6366F1)],
+          );
+        case 2: // Stok & Ürün
+          return const LinearGradient(
+            colors: [Color(0xFF10B981), Color(0xFF059669)],
+          );
+        case 3: // Satış
+          return const LinearGradient(
+            colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+          );
+        case 4: // Satın Alma
+          return const LinearGradient(
+            colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+          );
+        case 5: // Finans
+          return const LinearGradient(
+            colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+          );
+        case 6: // Proje
+          return const LinearGradient(
+            colors: [Color(0xFFEC4899), Color(0xFFDB2777)],
+          );
+        case 7: // İK
+          return const LinearGradient(
+            colors: [Color(0xFF06B6D4), Color(0xFF0891B2)],
+          );
+        case 8: // Servis
+          return const LinearGradient(
+            colors: [Color(0xFFF97316), Color(0xFFEA580C)],
+          );
+        case 9: // CRM
+          return const LinearGradient(
+            colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+          );
+        case 10: // Raporlama
+          return const LinearGradient(
+            colors: [Color(0xFF14B8A6), Color(0xFF0D9488)],
+          );
+        case 11: // Entegrasyon
+          return const LinearGradient(
+            colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+          );
+        case 12: // Uyumluluk
+          return const LinearGradient(
+            colors: [Color(0xFF64748B), Color(0xFF475569)],
+          );
+        case 13: // Ayarlar
+          return const LinearGradient(
+            colors: [Color(0xFF64748B), Color(0xFF334155)],
+          );
+        default:
+          return const LinearGradient(
+            colors: [Color(0xFF64748B), Color(0xFF334155)],
+          );
+      }
+    }
+
+    return const LinearGradient(
+      colors: [Color(0xFF38BDF8), Color(0xFF6366F1)],
+    );
+  }
+
+  String _getPageDescription() {
+    if (_activeTabId == null) return '';
+
+    if (_activeTabId!.startsWith('module_')) {
+      final index =
+          int.tryParse(_activeTabId!.substring('module_'.length)) ?? 0;
+
+      switch (index) {
+        case 1:
+          return 'Müşteri ve tedarikçi tüm cari hesap fonksiyonlarına tek merkezden erişin.';
+        case 2:
+          return 'Ürün, stok ve envanter yönetimi işlemlerinizi buradan yönetin.';
+        case 3:
+          return 'Satış süreçlerinizi teklif, sipariş ve faturalama ile yönetin.';
+        case 4:
+          return 'Tedarik, sipariş ve satın alma operasyonlarınızı takip edin.';
+        case 5:
+          return 'Finans, muhasebe ve bütçe yönetimi işlemlerinizi gerçekleştirin.';
+        case 6:
+          return 'Proje planlama, takip ve kaynak yönetimi işlemlerinizi yapın.';
+        case 7:
+          return 'İnsan kaynakları, bordro ve personel yönetimi süreçlerinizi yönetin.';
+        case 8:
+          return 'Servis talepleri, bakım ve destek süreçlerinizi takip edin.';
+        case 9:
+          return 'Müşteri ilişkileri, satış ve pazarlama faaliyetlerinizi yönetin.';
+        case 10:
+          return 'Raporlar, analizler ve iş zekası araçlarına erişin.';
+        case 11:
+          return 'Sistem entegrasyonları ve API yönetimi işlemlerinizi yapın.';
+        case 12:
+          return 'Uyumluluk, risk yönetimi ve denetim süreçlerinizi takip edin.';
+        case 13:
+          return 'Sistem ayarları, parametreler ve bildirim yönetimi.';
+        default:
+          return '';
+      }
+    }
+
+    return '';
+  }
+
+  // ---------------------------------------------------------------------------
   //  WORKSPACE TABCONTROL
   // ---------------------------------------------------------------------------
 
@@ -583,114 +1496,123 @@ class _ERPlusShellState extends State<ERPlusShell> {
           ),
         ),
       ),
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: _tabs.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 6),
-        itemBuilder: (context, index) {
-          final tab = _tabs[index];
-          final isActive = tab.id == _activeTabId;
+      child: Scrollbar(
+        controller: _tabScrollController,
+        thumbVisibility: true,
+        trackVisibility: true,
+        thickness: 6,
+        radius: const Radius.circular(3),
+        child: ListView.separated(
+          controller: _tabScrollController,
+          scrollDirection: Axis.horizontal,
+          itemCount: _tabs.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 6),
+          itemBuilder: (context, index) {
+            final tab = _tabs[index];
+            final isActive = tab.id == _activeTabId;
 
-          return MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _activeTabId = tab.id;
+            return MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _activeTabId = tab.id;
 
-                  if (tab.id.startsWith('module_')) {
-                    _selectedMenuIndex = int.parse(
-                      tab.id.substring('module_'.length),
-                    );
-                  } else if (tab.id == 'customer_card') {
-                    _selectedMenuIndex = 1;
-                  }
-                });
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOutCubic,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(7),
-                  color: isActive
-                      ? const Color(0xFFF5F5F7) // Aktif sekme açık gri
-                      : Colors.transparent,
-                  boxShadow: isActive
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
-                          ),
-                        ]
-                      : null,
-                  border: isActive
-                      ? Border.all(
-                          color: Colors.black.withOpacity(0.06),
-                          width: 0.5,
-                        )
-                      : null,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      tab.icon,
-                      size: 15,
-                      color: isActive
-                          ? const Color(0xFF007AFF)
-                          : const Color(0xFF8E8E93),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      tab.label,
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight:
-                            isActive ? FontWeight.w600 : FontWeight.w500,
+                    if (tab.id.startsWith('module_')) {
+                      _selectedMenuIndex = int.parse(
+                        tab.id.substring('module_'.length),
+                      );
+                    } else if (tab.id == 'customer_card') {
+                      _selectedMenuIndex = 1;
+                    }
+                  });
+                  _scrollToActiveTab();
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(7),
+                    color: isActive
+                        ? const Color(0xFFF5F5F7) // Aktif sekme açık gri
+                        : Colors.transparent,
+                    boxShadow: isActive
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ]
+                        : null,
+                    border: isActive
+                        ? Border.all(
+                            color: Colors.black.withOpacity(0.06),
+                            width: 0.5,
+                          )
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        tab.icon,
+                        size: 15,
                         color: isActive
-                            ? const Color(0xFF1D1D1F)
-                            : const Color(0xFF86868B),
-                        letterSpacing: -0.08,
+                            ? const Color(0xFF007AFF)
+                            : const Color(0xFF8E8E93),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    // X butonu
-                    MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
-                        onTap: () => _closeTab(tab.id),
-                        child: Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isActive
-                                ? const Color(0xFFE5E5EA)
-                                : Colors.transparent,
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.close_rounded,
-                              size: 11,
+                      const SizedBox(width: 6),
+                      Text(
+                        tab.label,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight:
+                              isActive ? FontWeight.w600 : FontWeight.w500,
+                          color: isActive
+                              ? const Color(0xFF1D1D1F)
+                              : const Color(0xFF86868B),
+                          letterSpacing: -0.08,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      // X butonu
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () => _closeTab(tab.id),
+                          child: Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
                               color: isActive
-                                  ? const Color(0xFF86868B)
-                                  : const Color(0xFFAEAEB2),
+                                  ? const Color(0xFFE5E5EA)
+                                  : Colors.transparent,
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 11,
+                                color: isActive
+                                    ? const Color(0xFF86868B)
+                                    : const Color(0xFFAEAEB2),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -1284,4 +2206,167 @@ class _PlaceholderPage extends StatelessWidget {
       ),
     );
   }
+}
+
+// Modern Module Page with Grid Layout
+class _ModulePage extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final List<_ModuleCard> modules;
+  final Function(String) onOpenSubModule;
+
+  const _ModulePage({
+    required this.title,
+    required this.icon,
+    required this.modules,
+    required this.onOpenSubModule,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFF5F5F7),
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade200),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF6366F1).withOpacity(0.1),
+                          const Color(0xFF8B5CF6).withOpacity(0.1),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, size: 32, color: const Color(0xFF6366F1)),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${modules.length} modül mevcut',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.all(24),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 280,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 1.3,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final module = modules[index];
+                  return _buildModuleCard(module, context);
+                },
+                childCount: modules.length,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModuleCard(_ModuleCard module, BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () => onOpenSubModule(module.id),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: module.color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(module.icon, size: 24, color: module.color),
+              ),
+              const Spacer(),
+              Text(
+                module.label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF111827),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${module.subCount} alt modül',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ModuleCard {
+  final String id;
+  final String label;
+  final IconData icon;
+  final Color color;
+  final int subCount;
+
+  const _ModuleCard({
+    required this.id,
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.subCount,
+  });
 }
