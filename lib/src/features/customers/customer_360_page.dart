@@ -15,16 +15,34 @@ class _Customer360PageState extends State<Customer360Page>
   late TabController _tabController;
 
   final _currencyFormatter = NumberFormat('#,##0.00', 'tr_TR');
+  final _searchController = TextEditingController();
+  final _searchFocusNode = FocusNode();
+  List<Map<String, String>> _searchResults = [];
+  bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    // Sadece UI'ı güncelle, karakter sayısını göster
+    setState(() {
+      // Text temizlendiğinde sonuçları da temizle
+      if (_searchController.text.isEmpty) {
+        _isSearching = false;
+        _searchResults = [];
+      }
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -53,17 +71,24 @@ class _Customer360PageState extends State<Customer360Page>
 
   Widget _buildLeftPanel() {
     return Container(
-      width: 320,
+      width: 360,
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFFFBFBFB),
+            const Color(0xFFF5F7FA),
+          ],
+        ),
         border: Border(
-          right: BorderSide(color: Colors.grey.shade200, width: 1),
+          right: BorderSide(color: Colors.grey.shade200, width: 1.5),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 18,
-            offset: const Offset(3, 0),
+            color: const Color(0xFF0066FF).withOpacity(0.03),
+            blurRadius: 32,
+            offset: const Offset(8, 0),
           ),
         ],
       ),
@@ -74,18 +99,18 @@ class _Customer360PageState extends State<Customer360Page>
             child: ScrollConfiguration(
               behavior: const _NoGlowScrollBehavior(),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildQuickActions(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     _buildContactBlock(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     _buildFinancialBlock(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     _buildTagsBlock(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     _buildLastUpdate(),
                   ],
                 ),
@@ -99,176 +124,253 @@ class _Customer360PageState extends State<Customer360Page>
 
   Widget _buildLeftHeader() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 22),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+      margin: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Stack(
-            children: [
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.16),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.32),
-                    width: 3,
+          // Compact header with avatar and name
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                // Minimal avatar
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF667EEA).withOpacity(0.9),
+                        const Color(0xFF764BA2).withOpacity(0.9),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF667EEA).withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: Text(
+                          'ABC',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 2,
+                        right: 2,
+                        child: Container(
+                          width: 14,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            borderRadius: BorderRadius.circular(5),
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: const Center(
-                  child: Text(
-                    'ABC',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 34,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1.6,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'ABC Ticaret A.Ş.',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.4,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3F4F6),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'C-0001',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade700,
+                                letterSpacing: -0.1,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.business_rounded,
+                            size: 13,
+                            color: Colors.grey.shade500,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            'Kurumsal',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Divider
+          Container(
+            height: 1,
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            color: Colors.grey.shade100,
+          ),
+          // Badges and score in horizontal layout
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Badges
+                _buildCompactBadge(
+                  'VIP',
+                  Icons.workspace_premium_rounded,
+                  const Color(0xFFFBBF24),
+                  const Color(0xFFFEF3C7),
+                ),
+                const SizedBox(width: 6),
+                _buildCompactBadge(
+                  'A+',
+                  Icons.verified_rounded,
+                  const Color(0xFF10B981),
+                  const Color(0xFFD1FAE5),
+                ),
+                const Spacer(),
+                // Score
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF10B981).withOpacity(0.1),
+                        const Color(0xFF059669).withOpacity(0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF10B981).withOpacity(0.2),
+                      width: 1,
                     ),
                   ),
-                ),
-              ),
-              Positioned(
-                bottom: 4,
-                right: 4,
-                child: Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF22C55E),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          const Text(
-            'ABC Ticaret A.Ş.',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.4,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Kurumsal Müşteri • C-0001',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.82),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            alignment: WrapAlignment.center,
-            children: [
-              _buildPillBadge('VIP', Icons.star_rounded,
-                  const Color(0xFFFFC857), Colors.black.withOpacity(0.85)),
-              _buildPillBadge('Stratejik', Icons.flag_rounded,
-                  Colors.white.withOpacity(0.16), Colors.white),
-              _buildPillBadge('A+ Skor', Icons.verified_rounded,
-                  Colors.white.withOpacity(0.16), Colors.white),
-            ],
-          ),
-          const SizedBox(height: 18),
-          _buildScoreChip(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPillBadge(
-      String text, IconData icon, Color bg, Color foreground) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.18),
-          width: 0.8,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: foreground, size: 13),
-          const SizedBox(width: 5),
-          Text(
-            text,
-            style: TextStyle(
-              color: foreground,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScoreChip() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.18),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.35), width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            '95',
-            style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              letterSpacing: -1.2,
-            ),
-          ),
-          Text(
-            '/100',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: Colors.white.withOpacity(0.8),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF22C55E).withOpacity(0.38),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.trending_up_rounded, size: 14, color: Colors.white),
-                SizedBox(width: 4),
-                Text(
-                  '+5',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'SKOR',
+                            style: TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey.shade600,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text(
+                                '95',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF059669),
+                                  letterSpacing: -0.5,
+                                  height: 1,
+                                ),
+                              ),
+                              Text(
+                                '/100',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey.shade600,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.trending_up_rounded,
+                              color: Colors.white,
+                              size: 11,
+                            ),
+                            const SizedBox(width: 3),
+                            const Text(
+                              '+5',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -279,17 +381,37 @@ class _Customer360PageState extends State<Customer360Page>
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1.2,
-          color: Colors.grey.shade500,
+  Widget _buildCompactBadge(
+      String text, IconData icon, Color primaryColor, Color bgColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: primaryColor.withOpacity(0.3),
+          width: 1,
         ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 13,
+            color: primaryColor,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: primaryColor,
+              letterSpacing: -0.2,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -298,79 +420,108 @@ class _Customer360PageState extends State<Customer360Page>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Hızlı İşlemler'),
-        _buildQuickActionButton(
-          label: 'Yeni Sipariş',
-          icon: Icons.add_shopping_cart_rounded,
-          color: const Color(0xFF2563EB),
+        Padding(
+          padding: const EdgeInsets.only(left: 2, bottom: 10),
+          child: Text(
+            'HIZLI İŞLEMLER',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1,
+              color: Colors.grey.shade600,
+            ),
+          ),
         ),
-        _buildQuickActionButton(
-          label: 'Fatura Kes',
-          icon: Icons.receipt_long_rounded,
-          color: const Color(0xFF22C55E),
+        // Grid layout for actions
+        Row(
+          children: [
+            Expanded(
+              child: _buildMinimalActionCard(
+                'Sipariş',
+                Icons.add_shopping_cart_rounded,
+                const Color(0xFF3B82F6),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildMinimalActionCard(
+                'Fatura',
+                Icons.receipt_long_rounded,
+                const Color(0xFF8B5CF6),
+              ),
+            ),
+          ],
         ),
-        _buildQuickActionButton(
-          label: 'Tahsilat Kaydı',
-          icon: Icons.payments_rounded,
-          color: const Color(0xFFF59E0B),
-        ),
-        _buildQuickActionButton(
-          label: 'Teklif Oluştur',
-          icon: Icons.note_add_rounded,
-          color: const Color(0xFF0EA5E9),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _buildMinimalActionCard(
+                'Tahsilat',
+                Icons.account_balance_wallet_rounded,
+                const Color(0xFF10B981),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildMinimalActionCard(
+                'Teklif',
+                Icons.description_rounded,
+                const Color(0xFFF59E0B),
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildQuickActionButton({
-    required String label,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {},
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.04),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withOpacity(0.2), width: 1),
+  Widget _buildMinimalActionCard(String label, IconData icon, Color color) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () {},
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: Colors.grey.shade200,
+              width: 1,
             ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, color: color, size: 18),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: color,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade800,
+                  letterSpacing: -0.2,
                 ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 12,
-                  color: color.withOpacity(0.6),
-                ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ),
@@ -378,49 +529,269 @@ class _Customer360PageState extends State<Customer360Page>
   }
 
   Widget _buildContactBlock() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 2, bottom: 12),
+            child: Text(
+              'İLETİŞİM',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ),
+          _buildCompactContactRow(
+            Icons.person_rounded,
+            'Ahmet Yılmaz',
+            'Satın Alma Müdürü',
+            const Color(0xFF3B82F6),
+          ),
+          const SizedBox(height: 8),
+          _buildCompactContactRow(
+            Icons.phone_rounded,
+            '+90 216 555 12 34',
+            'Dahili: 1234',
+            const Color(0xFF10B981),
+          ),
+          const SizedBox(height: 8),
+          _buildCompactContactRow(
+            Icons.email_rounded,
+            'info@abcticaret.com',
+            null,
+            const Color(0xFFF59E0B),
+          ),
+          const SizedBox(height: 8),
+          _buildCompactContactRow(
+            Icons.location_on_rounded,
+            'Kadıköy, İstanbul',
+            'Türkiye',
+            const Color(0xFFEC4899),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactContactRow(
+    IconData icon,
+    String value,
+    String? subtitle,
+    Color color,
+  ) {
+    return Row(
       children: [
-        _buildSectionTitle('İletişim'),
-        _buildContactRow(Icons.person_outline_rounded, 'Yetkili',
-            'Ahmet Yılmaz • Satın Alma'),
-        _buildContactRow(Icons.phone_rounded, 'Telefon', '+90 216 555 12 34'),
-        _buildContactRow(Icons.email_rounded, 'E-posta', 'info@abcticaret.com'),
-        _buildContactRow(
-            Icons.location_on_rounded, 'Adres', 'İstanbul, Kadıköy • TR'),
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 16, color: color),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade900,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildContactRow(IconData icon, String label, String value) {
+  Widget _buildFinancialBlock() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: Colors.grey.shade600),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Padding(
+            padding: const EdgeInsets.only(left: 2, bottom: 12),
+            child: Text(
+              'FİNANSAL DURUM',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ),
+          _buildCompactFinancialMetric(
+            'Toplam Ciro',
+            _formatCurrency(2450000),
+            Icons.trending_up_rounded,
+            const Color(0xFF10B981),
+            '+12.5%',
+          ),
+          const SizedBox(height: 10),
+          _buildCompactFinancialMetric(
+            'Açık Alacak',
+            _formatCurrency(125000),
+            Icons.receipt_long_rounded,
+            const Color(0xFFF59E0B),
+            null,
+          ),
+          const SizedBox(height: 10),
+          _buildCompactFinancialMetric(
+            'Sipariş Adedi',
+            '234',
+            Icons.shopping_cart_rounded,
+            const Color(0xFF3B82F6),
+            null,
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF10B981).withOpacity(0.1),
+                  const Color(0xFF10B981).withOpacity(0.05),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF10B981).withOpacity(0.2),
+                width: 1.5,
+              ),
+            ),
+            child: Row(
               children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade500,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF059669)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withOpacity(0.3),
+                        blurRadius: 12,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.shield_rounded,
+                      size: 18, color: Colors.white),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Risk Skoru',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.grey.shade600,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text(
+                            '8.5',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF10B981),
+                              letterSpacing: -1,
+                              height: 1,
+                            ),
+                          ),
+                          Text(
+                            '/10',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey.shade600,
+                              height: 1.6,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF111827),
-                    letterSpacing: -0.2,
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF059669)],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withOpacity(0.3),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: const Text(
+                    'Düşük Risk',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 0.2,
+                    ),
                   ),
                 ),
               ],
@@ -431,87 +802,140 @@ class _Customer360PageState extends State<Customer360Page>
     );
   }
 
-  Widget _buildFinancialBlock() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildCompactFinancialMetric(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+    String? badge,
+  ) {
+    return Row(
       children: [
-        _buildSectionTitle('Finansal Durum'),
-        _buildFinancialRowLeft(
-            'Kredi Limiti', _formatCurrency(500000), const Color(0xFF2563EB)),
-        _buildFinancialRowLeft(
-            'Kullanılan', _formatCurrency(125000), const Color(0xFFF97316)),
-        _buildFinancialRowLeft(
-            'Kullanılabilir', _formatCurrency(375000), const Color(0xFF22C55E)),
-        const SizedBox(height: 10),
-        _buildFinancialRowLeft(
-            'Risk Skoru', '8.5 / 10', const Color(0xFF22C55E)),
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: color),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey.shade900,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (badge != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              badge,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
       ],
     );
   }
 
-  Widget _buildFinancialRowLeft(String label, String value, Color color) {
+  Widget _buildTagsBlock() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.16), width: 0.8),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
+          Padding(
+            padding: const EdgeInsets.only(left: 2, bottom: 10),
+            child: Text(
+              'ETİKETLER',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+                color: Colors.grey.shade600,
+              ),
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              color: color,
-              letterSpacing: -0.3,
-            ),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _SimpleTagChip('Aylık Sipariş', const Color(0xFF3B82F6)),
+              _SimpleTagChip('Referans', const Color(0xFF10B981)),
+              _SimpleTagChip('Uzun Vadeli', const Color(0xFF8B5CF6)),
+              _SimpleTagChip('Yüksek Ciro', const Color(0xFFF59E0B)),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTagsBlock() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Etiketler'),
-        Wrap(
-          spacing: 6,
-          runSpacing: 6,
-          children: const [
-            _TagChip('Aylık Sipariş'),
-            _TagChip('Referans Müşteri'),
-            _TagChip('Uzun Vadeli'),
-            _TagChip('Yüksek Ciro'),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _buildLastUpdate() {
-    return Center(
-      child: Text(
-        'Son güncelleme:\n15 Kas 2025, 14:30',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 9,
-          color: Colors.grey.shade400,
-          height: 1.4,
-        ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.access_time_rounded,
+            size: 12,
+            color: Colors.grey.shade500,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'Son güncelleme: 15 Kas 2025, 14:30',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -559,6 +983,12 @@ class _Customer360PageState extends State<Customer360Page>
       ),
       child: Row(
         children: [
+          // Customer search
+          SizedBox(
+            width: 360,
+            child: _buildCustomerSearchField(),
+          ),
+          const SizedBox(width: 20),
           // breadcrumb
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -584,27 +1014,6 @@ class _Customer360PageState extends State<Customer360Page>
             ],
           ),
           const Spacer(),
-          SizedBox(
-            width: 220,
-            child: TextField(
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: 'Bu müşteri içinde ara...',
-                prefixIcon: const Icon(Icons.search_rounded, size: 18),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(999),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(999),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
           _buildTopBarButton(
             icon: Icons.share_rounded,
             label: 'Paylaş',
@@ -620,6 +1029,565 @@ class _Customer360PageState extends State<Customer360Page>
             label: 'Favori',
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCustomerSearchField() {
+    return Stack(
+      children: [
+        TextField(
+          controller: _searchController,
+          focusNode: _searchFocusNode,
+          onSubmitted: (value) {
+            // Enter tuşuna basıldığında
+            if (value.length >= 3) {
+              _performSearch(value);
+            }
+          },
+          decoration: InputDecoration(
+            isDense: true,
+            hintText: 'Cari kod veya ünvan ile ara (Enter veya 🔍)',
+            hintStyle: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade500,
+            ),
+            prefixIcon: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  // Search icon'a tıklandığında
+                  if (_searchController.text.length >= 3) {
+                    _performSearch(_searchController.text);
+                  }
+                },
+                child: Icon(Icons.search_rounded,
+                    size: 20, color: Colors.grey.shade600),
+              ),
+            ),
+            suffixIcon: _searchController.text.isNotEmpty
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Karakter sayısı göstergesi
+                      Container(
+                        margin: const EdgeInsets.only(right: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _searchController.text.length >= 3
+                              ? const Color(0xFF10B981).withOpacity(0.1)
+                              : Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '${_searchController.text.length}/3',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: _searchController.text.length >= 3
+                                ? const Color(0xFF10B981)
+                                : Colors.grey.shade600,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.clear_rounded,
+                            size: 18, color: Colors.grey.shade600),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _isSearching = false;
+                            _searchResults = [];
+                          });
+                        },
+                      ),
+                    ],
+                  )
+                : null,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+            ),
+          ),
+        ),
+        if (_isSearching && _searchResults.isNotEmpty)
+          Positioned(
+            top: 48,
+            left: 0,
+            right: 0,
+            child: _buildSearchResults(),
+          ),
+        // Arama yapılırken loading overlay
+        if (_isSearching && _searchResults.isEmpty)
+          Positioned(
+            top: 48,
+            left: 0,
+            right: 0,
+            child: Material(
+              elevation: 4,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFF6366F1)),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Aranıyor...',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _performSearch(String query) {
+    if (query.length < 3) {
+      setState(() {
+        _isSearching = false;
+        _searchResults = [];
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+      _searchResults = [];
+    });
+
+    // Simulated delay for API call
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+
+      final results = [
+        {'code': 'C-0001', 'name': 'ABC Ticaret A.Ş.', 'city': 'İstanbul'},
+        {'code': 'C-0002', 'name': 'XYZ Lojistik Ltd.', 'city': 'Ankara'},
+        {'code': 'C-0003', 'name': 'ABC Yapı A.Ş.', 'city': 'İzmir'},
+        {'code': 'C-0125', 'name': 'DEF İnşaat Ltd.', 'city': 'Bursa'},
+        {'code': 'C-0210', 'name': 'GHI Tekstil A.Ş.', 'city': 'Denizli'},
+        {'code': 'C-0505', 'name': 'JKL Otomotiv Ltd.', 'city': 'Kocaeli'},
+      ]
+          .where((customer) =>
+              customer['code']!.toLowerCase().contains(query.toLowerCase()) ||
+              customer['name']!.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+
+      setState(() {
+        _searchResults = results;
+        _isSearching = results.isEmpty ? false : true;
+      });
+
+      // Show modal if results found
+      if (results.isNotEmpty) {
+        _showSearchResultsDialog();
+      }
+    });
+  }
+
+  void _showSearchResultsDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.3),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(0),
+        alignment: Alignment.topCenter,
+        child: Container(
+          margin: const EdgeInsets.only(top: 120, left: 24, right: 24),
+          constraints: const BoxConstraints(maxWidth: 500, maxHeight: 400),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withOpacity(0.05),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.search_rounded,
+                        size: 18, color: const Color(0xFF6366F1)),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${_searchResults.length} müşteri bulundu',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: Icon(Icons.close_rounded,
+                          size: 20, color: Colors.grey.shade600),
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
+              // Results
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.all(8),
+                  itemCount: _searchResults.length,
+                  itemBuilder: (context, index) {
+                    final customer = _searchResults[index];
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                          _searchController.text = customer['name']!;
+                          setState(() {
+                            _isSearching = false;
+                            _searchResults = [];
+                          });
+                          _searchFocusNode.unfocus();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0xFF667EEA).withOpacity(0.9),
+                                      const Color(0xFF764BA2).withOpacity(0.9),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    customer['name']!
+                                        .substring(0, 2)
+                                        .toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      customer['name']!,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF111827),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF6366F1)
+                                                .withOpacity(0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            customer['code']!,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF6366F1),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Icon(Icons.location_on_rounded,
+                                            size: 13,
+                                            color: Colors.grey.shade500),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          customer['city']!,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.arrow_forward_ios_rounded,
+                                  size: 16, color: Colors.grey.shade400),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    return Material(
+      elevation: 8,
+      borderRadius: BorderRadius.circular(12),
+      shadowColor: Colors.black.withOpacity(0.1),
+      child: Container(
+        constraints: const BoxConstraints(maxHeight: 320),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
+                border: Border(
+                    bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle_rounded,
+                      size: 14, color: const Color(0xFF10B981)),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${_searchResults.length} sonuç bulundu',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.keyboard_return_rounded,
+                            size: 12, color: Colors.grey.shade600),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Seç',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Results
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                itemCount: _searchResults.length,
+                itemBuilder: (context, index) {
+                  final customer = _searchResults[index];
+                  return _buildSearchResultItem(
+                    code: customer['code']!,
+                    name: customer['name']!,
+                    city: customer['city']!,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResultItem({
+    required String code,
+    required String name,
+    required String city,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          // Navigate to selected customer
+          _searchController.text = name;
+          setState(() {
+            _isSearching = false;
+            _searchResults = [];
+          });
+          _searchFocusNode.unfocus();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF667EEA).withOpacity(0.9),
+                      const Color(0xFF764BA2).withOpacity(0.9),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text(
+                    name.substring(0, 2).toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade900,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6366F1).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            code,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF6366F1),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(Icons.location_on_rounded,
+                            size: 12, color: Colors.grey.shade500),
+                        const SizedBox(width: 3),
+                        Text(
+                          city,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios_rounded,
+                  size: 14, color: Colors.grey.shade400),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -654,54 +1622,45 @@ class _Customer360PageState extends State<Customer360Page>
 
   Widget _buildTabs() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+          bottom: BorderSide(color: Colors.grey.shade100, width: 1),
         ),
       ),
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF3F4F6),
-          borderRadius: BorderRadius.circular(999),
+      child: TabBar(
+        controller: _tabController,
+        isScrollable: false,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 16),
+        indicatorSize: TabBarIndicatorSize.label,
+        indicator: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: const Color(0xFF6366F1),
+              width: 2,
+            ),
+          ),
         ),
-        child: TabBar(
-          controller: _tabController,
-          isScrollable: false,
-          labelPadding: EdgeInsets.zero,
-          indicator: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(999),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          labelColor: const Color(0xFF2563EB),
-          unselectedLabelColor: Colors.grey.shade600,
-          labelStyle: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.2,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-          tabs: const [
-            _TabItem(icon: Icons.dashboard_rounded, text: 'Genel Bakış'),
-            _TabItem(
-                icon: Icons.account_balance_wallet_rounded, text: 'Finans'),
-            _TabItem(icon: Icons.description_rounded, text: 'Belgeler'),
-            _TabItem(icon: Icons.timeline_rounded, text: 'Aktivite'),
-            _TabItem(icon: Icons.shield_rounded, text: 'Risk Profili'),
-          ],
+        labelColor: const Color(0xFF6366F1),
+        unselectedLabelColor: Colors.grey.shade600,
+        labelStyle: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.3,
         ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: Colors.grey.shade500,
+        ),
+        tabs: const [
+          _TabItem(icon: Icons.dashboard_rounded, text: 'Genel Bakış'),
+          _TabItem(icon: Icons.account_balance_wallet_rounded, text: 'Finans'),
+          _TabItem(icon: Icons.description_rounded, text: 'Belgeler'),
+          _TabItem(icon: Icons.timeline_rounded, text: 'Aktivite'),
+          _TabItem(icon: Icons.shield_rounded, text: 'Risk Profili'),
+        ],
       ),
     );
   }
@@ -795,17 +1754,18 @@ class _Customer360PageState extends State<Customer360Page>
     required Color color,
     required IconData icon,
   }) {
+    final bool isPositive = change.startsWith('+');
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withOpacity(0.18), width: 1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.08),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -815,37 +1775,57 @@ class _Customer360PageState extends State<Customer360Page>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, size: 20, color: color),
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF22C55E).withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(999),
+                  color: isPositive
+                      ? const Color(0xFF10B981).withOpacity(0.1)
+                      : const Color(0xFFF59E0B).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(
-                  change,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF15803D),
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isPositive
+                          ? Icons.trending_up_rounded
+                          : Icons.trending_down_rounded,
+                      size: 12,
+                      color: isPositive
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFF59E0B),
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      change,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: isPositive
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFF59E0B),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Text(
             title,
             style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
               color: Colors.grey.shade600,
             ),
           ),
@@ -853,10 +1833,10 @@ class _Customer360PageState extends State<Customer360Page>
           Text(
             value,
             style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              color: color,
-              letterSpacing: -0.8,
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: Colors.grey.shade900,
+              letterSpacing: -0.5,
             ),
           ),
         ],
@@ -868,47 +1848,42 @@ class _Customer360PageState extends State<Customer360Page>
       {required String title,
       required IconData icon,
       required Widget child,
-      Color iconColor = const Color(0xFF2563EB)}) {
+      Color iconColor = const Color(0xFF3B82F6)}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
-            offset: const Offset(0, 3),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, size: 18, color: iconColor),
-                ),
-                const SizedBox(width: 10),
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
+                    color: Colors.grey.shade900,
+                    letterSpacing: -0.2,
                   ),
                 ),
+                const SizedBox(width: 8),
+                Icon(icon, size: 16, color: Colors.grey.shade500),
               ],
             ),
           ),
-          Divider(height: 1, color: Colors.grey.shade200),
+          Divider(height: 1, color: Colors.grey.shade100, thickness: 1),
           Padding(
             padding: const EdgeInsets.all(16),
             child: child,
@@ -1945,11 +2920,13 @@ class _TabItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Tab(
+      height: 44,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16),
-          const SizedBox(width: 6),
+          Icon(icon, size: 18),
+          const SizedBox(width: 8),
           Text(text),
         ],
       ),
@@ -1957,25 +2934,31 @@ class _TabItem extends StatelessWidget {
   }
 }
 
-class _TagChip extends StatelessWidget {
+class _SimpleTagChip extends StatelessWidget {
   final String label;
+  final Color color;
 
-  const _TagChip(this.label);
+  const _SimpleTagChip(this.label, this.color);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFE5F0FF),
-        borderRadius: BorderRadius.circular(999),
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
       ),
       child: Text(
         label,
-        style: const TextStyle(
-          fontSize: 10,
+        style: TextStyle(
+          fontSize: 11,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF1D4ED8),
+          color: color,
+          letterSpacing: -0.1,
         ),
       ),
     );

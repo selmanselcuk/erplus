@@ -5,6 +5,7 @@ import '../features/customers/customers_page.dart';
 import '../features/customers/customer_card_page.dart';
 import '../features/customers/customer_list_page.dart';
 import '../features/customers/customer_360_page.dart';
+import '../features/inventory/inventory_page.dart';
 
 class ERPlusShell extends StatefulWidget {
   const ERPlusShell({super.key});
@@ -72,6 +73,11 @@ class _ERPlusShellState extends State<ERPlusShell> {
               onOpenCustomerCard: _openCustomerCardTab,
               onOpenCustomerList: _openCustomerListTab,
               onOpenCustomer360: _openCustomer360Tab,
+            );
+        break;
+      case 2:
+        builder = (ctx) => InventoryPage(
+              onOpenSubModule: _openInventorySubModule,
             );
         break;
       default:
@@ -170,6 +176,59 @@ class _ERPlusShellState extends State<ERPlusShell> {
     setState(() {
       _activeTabId = id;
       _selectedMenuIndex = 1; // Cari modülü
+    });
+  }
+
+  void _openInventorySubModule(String subModuleId) {
+    final id = 'inventory_$subModuleId';
+
+    final moduleNames = {
+      'urun': 'Ürün Yönetimi',
+      'varyant': 'Varyant & Barkod',
+      'depo': 'Depo & Lokasyon',
+      'hareket': 'Envanter Hareketleri',
+      'sayim': 'Sayım & Uyum',
+      'kalite': 'Kalite & Uygunluk',
+      'planlama': 'Tedarik & Planlama',
+      'maliyet': 'Maliyet & Fiyat',
+      'analitik': 'Analitik & Raporlama',
+      'entegr': 'Entegrasyonlar',
+      'hizmet': 'Hizmet Yönetimi',
+      'ayarlar': 'Ayarlar & Sözlükler',
+    };
+
+    final moduleIcons = {
+      'urun': Icons.inventory_2_rounded,
+      'varyant': Icons.view_module_rounded,
+      'depo': Icons.warehouse_rounded,
+      'hareket': Icons.sync_alt_rounded,
+      'sayim': Icons.rule_folder_rounded,
+      'kalite': Icons.verified_rounded,
+      'planlama': Icons.event_repeat_rounded,
+      'maliyet': Icons.price_change_rounded,
+      'analitik': Icons.insights_rounded,
+      'entegr': Icons.hub_rounded,
+      'hizmet': Icons.design_services_rounded,
+      'ayarlar': Icons.tune_rounded,
+    };
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: moduleIcons[subModuleId] ?? Icons.category_rounded,
+          label: moduleNames[subModuleId] ?? subModuleId,
+          builder: (ctx) => _PlaceholderPage(
+            title: moduleNames[subModuleId] ?? subModuleId,
+          ),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 2; // Stok modülü
     });
   }
 
