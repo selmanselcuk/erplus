@@ -1,349 +1,272 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 
-class DashboardPage extends StatefulWidget {
+class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
   @override
-  State<DashboardPage> createState() => _DashboardPageState();
-}
-
-class _DashboardPageState extends State<DashboardPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    )..forward();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFF5F5F7), Color(0xFFFFFFFF)],
-        ),
-      ),
-      child: ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(32),
-        children: [
-          _buildWelcomeHeader(),
-          const SizedBox(height: 32),
-          _buildQuickStats(),
-          const SizedBox(height: 32),
-          _buildMetricsGrid(),
-        ],
-      ),
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.all(20),
+      children: [
+        // KPI Cards (Üst Metrikler)
+        _buildKPICards(context),
+        const SizedBox(height: 24),
+
+        // Grafikler Satırı (Gelir + Gider)
+        _buildChartsRow(context),
+        const SizedBox(height: 24),
+
+        // Alt Bölüm: Son İşlemler, Bekleyen Ödemeler, Stok Durumu
+        _buildBottomSection(context),
+      ],
     );
   }
 
-  Widget _buildWelcomeHeader() {
-    return FadeTransition(
-      opacity: _animationController,
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF007AFF), Color(0xFF0051D5)],
-              ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF007AFF).withOpacity(0.3),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: const Icon(
-              CupertinoIcons.chart_bar_square_fill,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Dashboard',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF1D1D1F),
-                    letterSpacing: -1.2,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Hoş geldiniz! İşletme performansınıza göz atın',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF8E8E93),
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickStats() {
-    return FadeTransition(
-      opacity: _animationController,
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF007AFF), Color(0xFF0051D5)],
-          ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF007AFF).withOpacity(0.3),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: IntrinsicHeight(
-          child: Row(
-            children: [
-              Expanded(
-                child: _buildQuickStatItem(
-                  'Bugün',
-                  '₺45,890',
-                  CupertinoIcons.money_dollar_circle_fill,
-                  '+12.5%',
-                ),
-              ),
-              Container(
-                width: 1,
-                color: Colors.white.withOpacity(0.3),
-                margin: const EdgeInsets.symmetric(vertical: 8),
-              ),
-              Expanded(
-                child: _buildQuickStatItem(
-                  'Bu Ay',
-                  '₺1.2M',
-                  CupertinoIcons.calendar_circle_fill,
-                  '+8.2%',
-                ),
-              ),
-              Container(
-                width: 1,
-                color: Colors.white.withOpacity(0.3),
-                margin: const EdgeInsets.symmetric(vertical: 8),
-              ),
-              Expanded(
-                child: _buildQuickStatItem(
-                  'Bu Yıl',
-                  '₺12.5M',
-                  CupertinoIcons.chart_bar_circle_fill,
-                  '+15.7%',
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickStatItem(
-    String label,
-    String value,
-    IconData icon,
-    String change,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          Icon(icon, size: 32, color: Colors.white.withOpacity(0.9)),
-          const SizedBox(height: 12),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.85),
-              letterSpacing: -0.2,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: const Color(0xFF34C759).withOpacity(0.2),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: const Color(0xFF34C759).withOpacity(0.4),
-                width: 1,
-              ),
-            ),
-            child: Text(
-              change,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF34C759),
-                letterSpacing: -0.1,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMetricsGrid() {
+  Widget _buildKPICards(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        int columns = 2;
-        if (width >= 1200) {
-          columns = 4;
-        } else if (width >= 800) {
-          columns = 3;
+        int columns = 4;
+        if (width < 1200) {
+          columns = 2;
+        } else if (width < 800) {
+          columns = 1;
         }
 
-        final metrics = [
-          _MetricData(
-            'Toplam Satış',
-            '₺1,234,567',
-            CupertinoIcons.chart_bar_alt_fill,
-            const Color(0xFF34C759),
-            '+12.5%',
-            '₺145,890',
-          ),
-          _MetricData(
-            'Müşteriler',
-            '1,234',
-            CupertinoIcons.person_2_fill,
-            const Color(0xFF007AFF),
-            '+8.3%',
-            '89 yeni',
-          ),
-          _MetricData(
-            'Siparişler',
-            '567',
-            CupertinoIcons.cart_fill,
-            const Color(0xFFFF9500),
-            '+15.2%',
-            '45 beklemede',
-          ),
-          _MetricData(
-            'Ürünler',
-            '890',
-            CupertinoIcons.cube_box_fill,
-            const Color(0xFF5856D6),
-            '+5.1%',
-            '23 stokta',
-          ),
-          _MetricData(
-            'Gelir',
-            '₺890,450',
-            CupertinoIcons.money_dollar_circle_fill,
-            const Color(0xFF00C7BE),
-            '+18.9%',
-            'Bu ay',
-          ),
-          _MetricData(
-            'Gider',
-            '₺345,120',
-            CupertinoIcons.arrow_down_circle_fill,
-            const Color(0xFFFF3B30),
-            '-3.2%',
-            'Bu ay',
-          ),
-          _MetricData(
-            'Kar',
-            '₺545,330',
-            CupertinoIcons.graph_circle_fill,
-            const Color(0xFF32D74B),
-            '+25.6%',
-            'Net',
-          ),
-          _MetricData(
-            'Bekleyen',
-            '₺125,890',
-            CupertinoIcons.clock_fill,
-            const Color(0xFFFF9F0A),
-            '23 adet',
-            'Onay bekliyor',
-          ),
-        ];
-
-        return GridView.builder(
+        return GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            mainAxisSpacing: 20,
-            crossAxisSpacing: 20,
-            childAspectRatio: 1.3,
-          ),
-          itemCount: metrics.length,
-          itemBuilder: (context, index) {
-            return FadeTransition(
-              opacity: _animationController,
-              child: _buildMetricCard(metrics[index]),
-            );
-          },
+          crossAxisCount: columns,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 2.2,
+          children: [
+            _buildKPICard(
+              'Toplam Cari Bakiye',
+              '₺2.458.750',
+              '+12.5%',
+              true,
+              Icons.account_balance_wallet_rounded,
+              const LinearGradient(
+                  colors: [Color(0xFF38BDF8), Color(0xFF6366F1)]),
+            ),
+            _buildKPICard(
+              'Gunluk Satis',
+              '₺185.240',
+              '+8.3%',
+              true,
+              Icons.trending_up_rounded,
+              const LinearGradient(
+                  colors: [Color(0xFF10B981), Color(0xFF3B82F6)]),
+            ),
+            _buildKPICard(
+              'Stok Degeri',
+              '₺1.875.300',
+              '-2.1%',
+              false,
+              Icons.inventory_2_rounded,
+              const LinearGradient(
+                  colors: [Color(0xFFEC4899), Color(0xFFF97316)]),
+            ),
+            _buildKPICard(
+              'Bekleyen Siparisler',
+              '47',
+              '+5',
+              true,
+              Icons.pending_actions_rounded,
+              const LinearGradient(
+                  colors: [Color(0xFFF59E0B), Color(0xFFEF4444)]),
+            ),
+          ],
         );
       },
     );
   }
 
-  Widget _buildMetricCard(_MetricData metric) {
+  Widget _buildKPICard(
+    String title,
+    String value,
+    String change,
+    bool isPositive,
+    IconData icon,
+    LinearGradient gradient,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: gradient,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: Colors.white, size: 20),
+              ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1E293B),
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    isPositive
+                        ? Icons.arrow_upward_rounded
+                        : Icons.arrow_downward_rounded,
+                    size: 14,
+                    color: isPositive
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFEF4444),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    change,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isPositive
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'bu ay',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChartsRow(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 1200) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 3, child: _buildRevenueChart()),
+              const SizedBox(width: 16),
+              Expanded(flex: 2, child: _buildExpenseChart()),
+            ],
+          );
+        } else {
+          return Column(
+            children: [
+              _buildRevenueChart(),
+              const SizedBox(height: 16),
+              _buildExpenseChart(),
+            ],
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildBottomSection(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 1400) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 2, child: _buildRecentTransactions()),
+              const SizedBox(width: 16),
+              Expanded(child: _buildPendingPayments()),
+              const SizedBox(width: 16),
+              Expanded(child: _buildStockAlerts()),
+            ],
+          );
+        } else if (constraints.maxWidth >= 900) {
+          return Column(
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: _buildRecentTransactions()),
+                  const SizedBox(width: 16),
+                  Expanded(child: _buildPendingPayments()),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildStockAlerts(),
+            ],
+          );
+        } else {
+          return Column(
+            children: [
+              _buildRecentTransactions(),
+              const SizedBox(height: 16),
+              _buildPendingPayments(),
+              const SizedBox(height: 16),
+              _buildStockAlerts(),
+            ],
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildRevenueChart() {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E5EA), width: 1),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -353,96 +276,66 @@ class _DashboardPageState extends State<DashboardPage>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [metric.color, metric.color.withOpacity(0.7)],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: metric.color.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Gelir Analizi',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1E293B),
                     ),
-                  ],
-                ),
-                child: Icon(metric.icon, size: 28, color: Colors.white),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Son 6 ay',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: metric.color.withOpacity(0.12),
+                  color: const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: metric.color.withOpacity(0.3),
-                    width: 1,
-                  ),
                 ),
-                child: Text(
-                  metric.change,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: metric.color,
-                    letterSpacing: -0.2,
-                  ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.calendar_today_rounded,
+                        size: 14, color: Color(0xFF64748B)),
+                    SizedBox(width: 6),
+                    Text(
+                      '2025',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const Spacer(),
-          Text(
-            metric.title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF8E8E93),
-              letterSpacing: -0.2,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            metric.value,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF1D1D1F),
-              letterSpacing: -1,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F7),
-              borderRadius: BorderRadius.circular(8),
-            ),
+          const SizedBox(height: 24),
+          // Basit bar chart simulation
+          SizedBox(
+            height: 220,
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                const Icon(
-                  CupertinoIcons.info_circle_fill,
-                  size: 14,
-                  color: Color(0xFF8E8E93),
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  metric.subtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF8E8E93),
-                    letterSpacing: -0.1,
-                  ),
-                ),
+                _buildBar('Haz', 0.6),
+                _buildBar('Tem', 0.8),
+                _buildBar('Agu', 0.7),
+                _buildBar('Eyl', 0.9),
+                _buildBar('Eki', 0.85),
+                _buildBar('Kas', 0.95),
               ],
             ),
           ),
@@ -450,22 +343,605 @@ class _DashboardPageState extends State<DashboardPage>
       ),
     );
   }
-}
 
-class _MetricData {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-  final String change;
-  final String subtitle;
+  Widget _buildBar(String label, double height) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Container(
+                height: 180 * height,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [Color(0xFF38BDF8), Color(0xFF6366F1)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-  _MetricData(
-    this.title,
-    this.value,
-    this.icon,
-    this.color,
-    this.change,
-    this.subtitle,
-  );
+  Widget _buildExpenseChart() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Gider Dagilimi',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Bu ay',
+            style: TextStyle(
+              fontSize: 13,
+              color: Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Donut chart simulation
+          SizedBox(
+            height: 200,
+            child: Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 150,
+                    height: 150,
+                    child: CircularProgressIndicator(
+                      value: 1.0,
+                      strokeWidth: 30,
+                      backgroundColor: const Color(0xFFF1F5F9),
+                      valueColor:
+                          const AlwaysStoppedAnimation(Color(0xFFEF4444)),
+                    ),
+                  ),
+                  const Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '₺425K',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1E293B),
+                        ),
+                      ),
+                      Text(
+                        'Toplam',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          _buildExpenseItem('Personel', '₺185K', 0.44, const Color(0xFFEF4444)),
+          _buildExpenseItem(
+              'Operasyon', '₺120K', 0.28, const Color(0xFFF59E0B)),
+          _buildExpenseItem('Pazarlama', '₺78K', 0.18, const Color(0xFF6366F1)),
+          _buildExpenseItem('Diger', '₺42K', 0.10, const Color(0xFF64748B)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpenseItem(
+      String label, String amount, double percent, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF64748B),
+              ),
+            ),
+          ),
+          Text(
+            amount,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${(percent * 100).toStringAsFixed(0)}%',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentTransactions() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Son Islemler',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+              TextButton(
+                onPressed: () {},
+                child: const Text(
+                  'Tumunu Gor',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildTransactionItem(
+            'ABC Ltd.',
+            'Satis Faturasi #SF-2401',
+            '₺45.800',
+            true,
+            '10:45',
+          ),
+          _buildTransactionItem(
+            'XYZ A.S.',
+            'Alis Faturasi #AF-5621',
+            '₺28.500',
+            false,
+            '09:30',
+          ),
+          _buildTransactionItem(
+            'DEF Tek.',
+            'Tahsilat #TH-8842',
+            '₺18.200',
+            true,
+            'Dun',
+          ),
+          _buildTransactionItem(
+            'GHI San.',
+            'Odeme #OD-3347',
+            '₺32.100',
+            false,
+            'Dun',
+          ),
+          _buildTransactionItem(
+            'JKL Ltd.',
+            'Satis Faturasi #SF-2398',
+            '₺67.900',
+            true,
+            '2 gun once',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionItem(
+    String company,
+    String description,
+    String amount,
+    bool isIncome,
+    String time,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isIncome
+                  ? const Color(0xFF10B981).withOpacity(0.1)
+                  : const Color(0xFFEF4444).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              isIncome
+                  ? Icons.arrow_downward_rounded
+                  : Icons.arrow_upward_rounded,
+              color:
+                  isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  company,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                amount,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isIncome
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFEF4444),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                time,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[500],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPendingPayments() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Bekleyen Odemeler',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildPaymentItem(
+            'MNO Ltd.',
+            '₺42.500',
+            'Bugun',
+            const Color(0xFFEF4444),
+            true,
+          ),
+          _buildPaymentItem(
+            'PQR A.S.',
+            '₺18.200',
+            'Yarin',
+            const Color(0xFFF59E0B),
+            true,
+          ),
+          _buildPaymentItem(
+            'STU Tek.',
+            '₺35.800',
+            '3 gun',
+            const Color(0xFF10B981),
+            false,
+          ),
+          _buildPaymentItem(
+            'VWX San.',
+            '₺25.400',
+            '5 gun',
+            const Color(0xFF10B981),
+            false,
+          ),
+          _buildPaymentItem(
+            'YZA Ltd.',
+            '₺52.100',
+            '1 hafta',
+            const Color(0xFF64748B),
+            false,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentItem(
+    String company,
+    String amount,
+    String dueDate,
+    Color color,
+    bool isUrgent,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  company,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Vade: $dueDate',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                amount,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+              if (isUrgent)
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    'ACIL',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStockAlerts() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Stok Uyarilari',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildStockItem(
+            'Urun-A',
+            'Kategori-1',
+            12,
+            50,
+            const Color(0xFFEF4444),
+          ),
+          _buildStockItem(
+            'Urun-B',
+            'Kategori-2',
+            28,
+            100,
+            const Color(0xFFF59E0B),
+          ),
+          _buildStockItem(
+            'Urun-C',
+            'Kategori-1',
+            45,
+            200,
+            const Color(0xFFF59E0B),
+          ),
+          _buildStockItem(
+            'Urun-D',
+            'Kategori-3',
+            8,
+            30,
+            const Color(0xFFEF4444),
+          ),
+          _buildStockItem(
+            'Urun-E',
+            'Kategori-2',
+            65,
+            150,
+            const Color(0xFF10B981),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStockItem(
+    String product,
+    String category,
+    int current,
+    int min,
+    Color color,
+  ) {
+    final percent = current / min;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                    Text(
+                      category,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '$current / $min',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: percent > 1 ? 1 : percent,
+              minHeight: 6,
+              backgroundColor: const Color(0xFFF1F5F9),
+              valueColor: AlwaysStoppedAnimation(color),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

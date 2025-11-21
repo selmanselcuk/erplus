@@ -104,44 +104,44 @@ class _CustomerCardPageState extends State<CustomerCardPage>
   final _cashDiscountAccountController = TextEditingController();
 
   // Şube ve Müşteri Grubu
-  String _branch = 'İstanbul Merkez'; // Dropdown - varsayılan değer
-  String _customerGroup = 'Standart'; // Standart, VIP, Premium, Yeni
-  String _customerClass = 'A Sınıfı'; // Dropdown
+  String _branch = ''; // Dropdown - boş başlasın
+  String _customerGroup = ''; // Standart, VIP, Premium, Yeni
+  String _customerClass = ''; // Dropdown
 
   // Şirket ve Sektör Kodu arama için
   final _companyCodeController = TextEditingController();
   final _sectorCodeController = TextEditingController();
 
-  String _accountGroup = 'Müşteri'; // Varsayılan
+  String _accountGroup = ''; // Boş başlasın, kullanıcı seçsin
   String _status = 'Aktif'; // Varsayılan aktif
   String _currency = 'TRY';
-  String _customerType = 'Perakende'; // Perakende, Kurumsal, Kamu
-  String _salesOrg = '1000'; // Satış Organizasyonu
-  String _distributionChannel = '10'; // Dağıtım Kanalı
-  String _division = '00'; // Bölüm
-  String _priceList = 'Standart'; // Fiyat Listesi
-  String _paymentMethod = 'Havale'; // Ödeme Yöntemi
-  String _incoterms = 'EXW'; // Teslim Şartları
-  String _shippingCondition = 'Standart'; // Sevkiyat Şartı
-  String _riskCategory = 'Düşük Risk'; // Risk Kategorisi
+  String _customerType = ''; // Boş başlasın
+  String _salesOrg = ''; // Boş başlasın
+  String _distributionChannel = ''; // Boş başlasın
+  String _division = ''; // Boş başlasın
+  String _priceList = ''; // Boş başlasın
+  String _paymentMethod = ''; // Boş başlasın
+  String _incoterms = ''; // Boş başlasın
+  String _shippingCondition = ''; // Boş başlasın
+  String _riskCategory = ''; // Boş başlasın
   bool _taxExempt = false; // Vergi Muafiyeti
   bool _blocked = false; // Blokeli
   bool _oneTimeCustomer = false; // Tek Seferlik Müşteri
 
   // Vergi Kategorisi & Sınıflandırma
-  String _taxCategory = 'Genel Vergilendirme';
-  String _taxLiabilityType = 'Tam Mükellef';
-  String _vatWithholdingRate = 'Yok';
-  String _incomeTaxWithholding = 'Yok';
-  String _corporateTaxWithholding = 'Yok';
-  String _stampTax = 'Yok';
-  String _paymentTerms = '30 Gün';
+  String _taxCategory = '';
+  String _taxLiabilityType = '';
+  String _vatWithholdingRate = '';
+  String _incomeTaxWithholding = '';
+  String _corporateTaxWithholding = '';
+  String _stampTax = '';
+  String _paymentTerms = '';
 
   // e-Fatura & e-Defter
   bool _eInvoiceActive = false;
   bool _eArchiveActive = false;
   bool _eLedgerActive = false;
-  String _eArchiveScenario = 'Temel';
+  String _eArchiveScenario = '';
   final _eInvoiceLabelController = TextEditingController();
 
   // Form değişiklik kontrolü
@@ -203,6 +203,12 @@ class _CustomerCardPageState extends State<CustomerCardPage>
   }
 
   void _generateCustomerCode() {
+    // Hesap grubu seçilmemişse kod üretme
+    if (_accountGroup.isEmpty) {
+      _codeController.clear();
+      return;
+    }
+
     // Sadece kaydet butonuna basıldığında kod artırılır
     String prefix;
     int counter;
@@ -504,10 +510,26 @@ class _CustomerCardPageState extends State<CustomerCardPage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF8E8E93),
+                textStyle: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: -0.4,
+                ),
+              ),
               child: const Text('Vazgeç'),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF007AFF),
+                textStyle: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.4,
+                ),
+              ),
               child: const Text('Devam Et'),
             ),
           ],
@@ -542,6 +564,276 @@ class _CustomerCardPageState extends State<CustomerCardPage>
         type: ToastType.success,
       );
     }
+  }
+
+  Future<void> _onClear() async {
+    if (_hasUnsavedChanges) {
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: const Text(
+            'Kaydedilmemiş Değişiklikler',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.4,
+            ),
+          ),
+          content: const Text(
+            'Kaydedilmemiş değişiklikler var. Formu temizlemek istediğinize emin misiniz?',
+            style: TextStyle(
+              fontSize: 15,
+              letterSpacing: -0.2,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF8E8E93),
+                textStyle: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: -0.4,
+                ),
+              ),
+              child: const Text('Vazgeç'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFFFF3B30),
+                textStyle: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.4,
+                ),
+              ),
+              child: const Text('Temizle'),
+            ),
+          ],
+        ),
+      );
+
+      if (result != true) return;
+    }
+
+    // Formu temizle
+    setState(() {
+      _codeController.clear();
+      _nameController.clear();
+      _companyCodeController.clear();
+      _sectorCodeController.clear();
+      _phoneController.clear();
+      _mobileController.clear();
+      _faxController.clear();
+      _emailController.clear();
+      _websiteController.clear();
+      _whatsappController.clear();
+      _addressController.clear();
+      _neighborhoodController.clear();
+      _streetController.clear();
+      _avenueController.clear();
+      _openAddressController.clear();
+      _districtController.clear();
+      _cityController.clear();
+      _countryController.clear();
+      _postalCodeController.clear();
+      _latitudeController.clear();
+      _longitudeController.clear();
+      _locationNameController.clear();
+      _taxOfficeCodeController.clear();
+      _ibanController.clear();
+
+      _accountGroup = '';
+      _status = 'Aktif';
+      _customerType = '';
+      _branch = '';
+      _customerGroup = '';
+      _customerClass = '';
+      _currency = 'TRY';
+      _paymentMethod = '';
+      _salesOrg = '';
+      _distributionChannel = '';
+      _division = '';
+      _priceList = '';
+      _incoterms = '';
+      _shippingCondition = '';
+      _riskCategory = '';
+      _taxCategory = '';
+      _taxLiabilityType = '';
+      _vatWithholdingRate = '';
+      _incomeTaxWithholding = '';
+      _corporateTaxWithholding = '';
+      _stampTax = '';
+      _paymentTerms = '';
+      _eArchiveScenario = '';
+      _taxExempt = false;
+      _hasUnsavedChanges = false;
+      _isSaved = false;
+    });
+    ToastNotification.show(
+      context,
+      message: 'Form temizlendi',
+      type: ToastType.info,
+    );
+  }
+
+  Future<void> _onDelete() async {
+    if (widget.customerId == null) {
+      ToastNotification.show(
+        context,
+        message: 'Henüz kaydedilmemiş bir kaydı silemezsiniz',
+        type: ToastType.warning,
+      );
+      return;
+    }
+
+    // Önce cari ile ilişkili işlem kontrolü yap
+    final hasRelatedTransactions = await _checkRelatedTransactions();
+
+    if (hasRelatedTransactions) {
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Row(
+            children: const [
+              Icon(Icons.warning_rounded, color: Color(0xFFFF9500), size: 28),
+              SizedBox(width: 12),
+              Text(
+                'Silme İşlemi Yapılamaz',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.4,
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Bu cari hesap ile ilişkili fatura, stok hareketi veya ödeme kaydı bulunmaktadır. İlişkili kayıtlar silinmeden bu cari hesap silinemez.',
+            style: TextStyle(
+              fontSize: 15,
+              letterSpacing: -0.2,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF007AFF),
+                textStyle: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.4,
+                ),
+              ),
+              child: const Text('Tamam'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // İlişkili işlem yoksa silme onayı al
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Row(
+          children: const [
+            Icon(Icons.delete_rounded, color: Color(0xFFFF3B30), size: 28),
+            SizedBox(width: 12),
+            Text(
+              'Cari Hesabı Sil',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.4,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          '"${_nameController.text.isNotEmpty ? _nameController.text : widget.customerId ?? "Bu cari hesap"}" cari hesabını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+          style: const TextStyle(
+            fontSize: 15,
+            letterSpacing: -0.2,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF8E8E93),
+              textStyle: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w400,
+                letterSpacing: -0.4,
+              ),
+            ),
+            child: const Text('Vazgeç'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFFF3B30),
+              textStyle: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.4,
+              ),
+            ),
+            child: const Text('Sil'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      // Silme işlemini gerçekleştir
+      ToastNotification.show(
+        context,
+        message: 'Cari hesap başarıyla silindi',
+        type: ToastType.success,
+      );
+
+      // Sayfayı kapat
+      widget.onClose();
+    }
+  }
+
+  Future<void> _onCancel() async {
+    if (_hasUnsavedChanges) {
+      final result = await _checkUnsavedChanges();
+      if (!result) return;
+    }
+
+    // Sayfayı kapat
+    widget.onClose();
+  }
+
+  // Cari ile ilişkili işlemleri kontrol et
+  Future<bool> _checkRelatedTransactions() async {
+    // Gerçek uygulamada burada veritabanı sorgusu yapılacak
+    // Şimdilik simüle ediyoruz
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Örnek: Eğer müşteri numarası belirli bir değerse ilişkili işlem var kabul et
+    final customerCode = _codeController.text;
+    if (customerCode.isNotEmpty) {
+      // Simülasyon: 120.01.001 numaralı müşterinin işlemi var
+      if (customerCode == '120.01.001') {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   @override
@@ -580,40 +872,50 @@ class _CustomerCardPageState extends State<CustomerCardPage>
   Widget _buildTabBar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+        color: const Color(0xFFF8F9FA),
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey[200]!,
+            width: 1,
           ),
-        ],
+        ),
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: TabBar(
         controller: _tabController,
         isScrollable: true,
-        labelColor: const Color(0xFF2563EB),
-        unselectedLabelColor: const Color(0xFF94A3B8),
-        indicatorColor: const Color(0xFF2563EB),
-        indicatorWeight: 3,
+        labelColor: const Color(0xFF007AFF),
+        unselectedLabelColor: const Color(0xFF8E8E93),
+        indicatorColor: const Color(0xFF007AFF),
+        indicatorWeight: 2,
         indicatorSize: TabBarIndicatorSize.label,
         labelStyle: const TextStyle(
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
-          letterSpacing: -0.1,
+          letterSpacing: -0.2,
         ),
         unselectedLabelStyle: const TextStyle(
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w500,
+          letterSpacing: -0.2,
         ),
+        dividerColor: Colors.transparent,
         tabs: const [
-          Tab(icon: Icon(Icons.info_outline), text: 'Genel Bilgiler'),
-          Tab(icon: Icon(Icons.contact_phone), text: 'İletişim'),
-          Tab(icon: Icon(Icons.account_balance), text: 'Vergi & Kimlik'),
-          Tab(icon: Icon(Icons.storefront), text: 'Satış'),
-          Tab(icon: Icon(Icons.payments), text: 'Finans'),
-          Tab(icon: Icon(Icons.code), text: 'Muhasebe & Kodlar'),
-          Tab(icon: Icon(Icons.note), text: 'Notlar'),
+          Tab(
+              icon: Icon(Icons.info_outline_rounded, size: 20),
+              text: 'Genel Bilgiler'),
+          Tab(icon: Icon(Icons.phone_outlined, size: 20), text: 'İletişim'),
+          Tab(
+              icon: Icon(Icons.receipt_long_outlined, size: 20),
+              text: 'Vergi & Kimlik'),
+          Tab(icon: Icon(Icons.storefront_outlined, size: 20), text: 'Satış'),
+          Tab(
+              icon: Icon(Icons.account_balance_wallet_outlined, size: 20),
+              text: 'Finans'),
+          Tab(
+              icon: Icon(Icons.code_rounded, size: 20),
+              text: 'Muhasebe & Kodlar'),
+          Tab(icon: Icon(Icons.notes_rounded, size: 20), text: 'Notlar'),
         ],
       ),
     );
@@ -621,96 +923,63 @@ class _CustomerCardPageState extends State<CustomerCardPage>
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF1E293B),
-            const Color(0xFF334155),
-            const Color(0xFF475569),
-          ],
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey[200]!,
+            width: 1,
+          ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: const Color(0xFF2563EB).withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () async {
-              if (await _checkUnsavedChanges()) {
-                widget.onClose();
-              }
-            },
-          ),
-          const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.all(10),
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF2563EB),
-                  const Color(0xFF38BDF8),
+                  Color(0xFF38BDF8),
+                  Color(0xFF6366F1),
                 ],
               ),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF2563EB).withOpacity(0.4),
+                  color: const Color(0xFF38BDF8).withOpacity(0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
               ],
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
             ),
-            child: const Icon(Icons.business, color: Colors.white, size: 20),
+            child: const Icon(Icons.business_rounded,
+                color: Colors.white, size: 24),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Müşteri Kartı',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                  style: const TextStyle(
+                    color: Color(0xFF1E293B),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   widget.customerId ?? 'Yeni Kayıt',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.75),
-                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    letterSpacing: 0.1,
                   ),
                 ),
               ],
@@ -785,16 +1054,164 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.save, color: Colors.white),
-            onPressed: _onSave,
-            tooltip: 'Kaydet (Ctrl+S)',
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {},
-            tooltip: 'Diğer İşlemler',
+          const SizedBox(width: 16),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Kaydet butonu
+              Container(
+                height: 36,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF007AFF),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF007AFF).withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextButton(
+                  onPressed: _onSave,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(0, 0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.save_rounded, size: 18),
+                      SizedBox(width: 8),
+                      Text(
+                        'Kaydet',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Temizle butonu
+              Container(
+                height: 36,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8E8E93),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: TextButton(
+                  onPressed: _onClear,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(0, 0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.refresh_rounded, size: 18),
+                      SizedBox(width: 8),
+                      Text(
+                        'Temizle',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Sil butonu
+              Container(
+                height: 36,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF3B30),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF3B30).withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextButton(
+                  onPressed: _onDelete,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(0, 0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.delete_rounded, size: 18),
+                      SizedBox(width: 8),
+                      Text(
+                        'Sil',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Vazgeç butonu
+              Container(
+                height: 36,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFFD1D1D6),
+                    width: 1,
+                  ),
+                ),
+                child: TextButton(
+                  onPressed: _onCancel,
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF1E293B),
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(0, 0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.close_rounded, size: 18),
+                      SizedBox(width: 8),
+                      Text(
+                        'Vazgeç',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -831,6 +1248,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                       _generateCustomerCode();
                     });
                   },
+                  hintText: 'Hesap grubu seçiniz',
                 ),
               ),
               const SizedBox(width: 16),
@@ -840,6 +1258,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   _customerType,
                   ['Perakende', 'Kurumsal', 'Kamu', 'İhracat'],
                   (val) => setState(() => _customerType = val!),
+                  hintText: 'Müşteri tipi seçiniz',
                 ),
               ),
               const SizedBox(width: 16),
@@ -856,6 +1275,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     'Antalya',
                   ],
                   (val) => setState(() => _branch = val!),
+                  hintText: 'Şube seçiniz',
                 ),
               ),
             ],
@@ -893,6 +1313,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     'Bireysel'
                   ],
                   (val) => setState(() => _customerGroup = val!),
+                  hintText: 'Grup seçiniz',
                 ),
               ),
               const SizedBox(width: 16),
@@ -908,6 +1329,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     'Stratejik',
                   ],
                   (val) => setState(() => _customerClass = val!),
+                  hintText: 'Sınıf seçiniz',
                 ),
               ),
             ],
@@ -1489,6 +1911,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     'Tam Tevkifat',
                   ],
                   (val) => setState(() => _taxCategory = val!),
+                  hintText: 'Kategori seçiniz',
                 ),
               ),
               const SizedBox(width: 16),
@@ -1503,6 +1926,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     'Basit Usul',
                   ],
                   (val) => setState(() => _taxLiabilityType = val!),
+                  hintText: 'Tür seçiniz',
                 ),
               ),
               const SizedBox(width: 16),
@@ -1518,6 +1942,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     '%9/10 (Hurda)',
                   ],
                   (val) => setState(() => _vatWithholdingRate = val!),
+                  hintText: 'Oran seçiniz',
                 ),
               ),
             ],
@@ -1539,6 +1964,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     '%5 (Komisyon)',
                   ],
                   (val) => setState(() => _incomeTaxWithholding = val!),
+                  hintText: 'Tevkifat seçiniz',
                 ),
               ),
               const SizedBox(width: 16),
@@ -1553,6 +1979,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     '%20 (Kira)',
                   ],
                   (val) => setState(() => _corporateTaxWithholding = val!),
+                  hintText: 'Tevkifat seçiniz',
                 ),
               ),
               const SizedBox(width: 16),
@@ -1567,6 +1994,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     'Muaf',
                   ],
                   (val) => setState(() => _stampTax = val!),
+                  hintText: 'Damga vergisi seçiniz',
                 ),
               ),
             ],
@@ -1656,6 +2084,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                           _eArchiveScenario,
                           ['Temel', 'Ticari', 'Internet'],
                           (val) => setState(() => _eArchiveScenario = val!),
+                          hintText: 'Senaryo seçiniz',
                         ),
                       ),
                   ],
@@ -1705,6 +2134,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     'Özel Vade',
                   ],
                   (val) => setState(() => _paymentTerms = val!),
+                  hintText: 'Vade seçiniz',
                 ),
               ),
               const SizedBox(width: 16),
@@ -1719,6 +2149,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     'Çok Yüksek Risk',
                   ],
                   (val) => setState(() => _riskCategory = val!),
+                  hintText: 'Risk seçiniz',
                 ),
               ),
               const SizedBox(width: 16),
@@ -1780,6 +2211,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   _priceList,
                   ['Standart', 'Promosyon', 'VIP', 'Özel'],
                   (val) => setState(() => _priceList = val!),
+                  hintText: 'Fiyat listesi seçiniz',
                 ),
               ),
               const SizedBox(width: 16),
@@ -1821,6 +2253,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     'CIF',
                   ],
                   (val) => setState(() => _incoterms = val!),
+                  hintText: 'Incoterm seçiniz',
                 ),
               ),
               const SizedBox(width: 16),
@@ -1830,6 +2263,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   _shippingCondition,
                   ['Standart', 'Ekspres', 'Kargo', 'Özel Araç'],
                   (val) => setState(() => _shippingCondition = val!),
+                  hintText: 'Sevkiyat seçiniz',
                 ),
               ),
             ],
@@ -1870,7 +2304,8 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                       'EUR',
                       'GBP',
                     ],
-                    (val) => setState(() => _currency = val!)),
+                    (val) => setState(() => _currency = val!),
+                    hintText: 'Para birimi seçiniz'),
               ),
             ],
           ),
@@ -1904,6 +2339,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             _paymentMethod,
             ['Havale', 'Kredi Kartı', 'Çek', 'Senet', 'Nakit'],
             (val) => setState(() => _paymentMethod = val!),
+            hintText: 'Ödeme yöntemi seçiniz',
           ),
           const SizedBox(height: 24),
           _buildSectionTitle('Risk Yönetimi'),
@@ -1913,6 +2349,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             _riskCategory,
             ['Düşük Risk', 'Orta Risk', 'Yüksek Risk', 'Çok Yüksek Risk'],
             (val) => setState(() => _riskCategory = val!),
+            hintText: 'Risk seviyesi seçiniz',
           ),
         ],
       ),
@@ -2087,57 +2524,23 @@ class _CustomerCardPageState extends State<CustomerCardPage>
 
   Widget _buildSectionTitle(String title) {
     return Container(
-      padding: const EdgeInsets.only(bottom: 14, top: 4),
+      padding: const EdgeInsets.only(bottom: 12, top: 4),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: const Color(0xFF2563EB).withOpacity(0.2),
-            width: 1.5,
+            color: const Color(0xFFE5E5EA),
+            width: 1,
           ),
         ),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 5,
-            height: 24,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF2563EB),
-                  Color(0xFF38BDF8),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(3),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF2563EB).withOpacity(0.3),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF1E293B),
-              letterSpacing: -0.2,
-              shadows: [
-                Shadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 2,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-          ),
-        ],
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF1E293B),
+          letterSpacing: -0.4,
+        ),
       ),
     );
   }
@@ -2159,11 +2562,11 @@ class _CustomerCardPageState extends State<CustomerCardPage>
           style: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF334155),
-            letterSpacing: -0.1,
+            color: Color(0xFF1E293B),
+            letterSpacing: -0.3,
           ),
         ),
-        const SizedBox(height: 9),
+        const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           enabled: enabled,
@@ -2171,50 +2574,58 @@ class _CustomerCardPageState extends State<CustomerCardPage>
           validator: validator,
           onChanged: onChanged,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1E293B),
+            letterSpacing: -0.2,
           ),
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: TextStyle(
-              fontSize: 13,
-              color: const Color(0xFF94A3B8),
+            hintStyle: const TextStyle(
+              fontSize: 15,
+              color: Color(0xFF8E8E93),
               fontWeight: FontWeight.w400,
+              letterSpacing: -0.2,
             ),
             filled: true,
-            fillColor: enabled ? Colors.white : const Color(0xFFF8F9FA),
+            fillColor: enabled ? Colors.white : const Color(0xFFF2F2F7),
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 13,
+              horizontal: 16,
+              vertical: 14,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: const Color(0xFFCBD5E1),
-                width: 1.5,
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Color(0xFFD1D1D6),
+                width: 1,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: const Color(0xFFCBD5E1),
-                width: 1.5,
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Color(0xFFD1D1D6),
+                width: 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: const Color(0xFF3498DB),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Color(0xFF007AFF),
                 width: 2,
               ),
             ),
             disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(
-                color: Color(0xFFE2E8F0),
-                width: 1.5,
+                color: Color(0xFFE5E5EA),
+                width: 1,
               ),
+            ),
+            errorMaxLines: 2,
+            errorStyle: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFFFF3B30),
+              height: 1.2,
             ),
           ),
         ),
@@ -2238,68 +2649,76 @@ class _CustomerCardPageState extends State<CustomerCardPage>
           style: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF334155),
-            letterSpacing: -0.1,
+            color: Color(0xFF1E293B),
+            letterSpacing: -0.3,
           ),
         ),
-        const SizedBox(height: 9),
+        const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           enabled: enabled,
           maxLines: maxLines,
           validator: validator,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1E293B),
+            letterSpacing: -0.2,
           ),
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: TextStyle(
-              fontSize: 13,
-              color: const Color(0xFF94A3B8),
+            hintStyle: const TextStyle(
+              fontSize: 15,
+              color: Color(0xFFC7C7CC),
               fontWeight: FontWeight.w400,
+              letterSpacing: -0.2,
             ),
             filled: true,
-            fillColor: enabled ? Colors.white : const Color(0xFFF8F9FA),
+            fillColor: enabled ? Colors.white : const Color(0xFFF2F2F7),
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 13,
+              horizontal: 16,
+              vertical: 14,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: const Color(0xFFCBD5E1),
-                width: 1.5,
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Color(0xFFD1D1D6),
+                width: 1,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: const Color(0xFFCBD5E1),
-                width: 1.5,
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Color(0xFFD1D1D6),
+                width: 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(
-                color: Color(0xFF2563EB),
+                color: Color(0xFF007AFF),
                 width: 2,
               ),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(
-                color: Color(0xFFEF4444),
-                width: 1.5,
+                color: Color(0xFFFF3B30),
+                width: 1,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(
-                color: Color(0xFFEF4444),
+                color: Color(0xFFFF3B30),
                 width: 2,
               ),
+            ),
+            errorMaxLines: 2,
+            errorStyle: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFFFF3B30),
+              height: 1.2,
             ),
           ),
         ),
@@ -2311,8 +2730,9 @@ class _CustomerCardPageState extends State<CustomerCardPage>
     String label,
     String value,
     List<String> items,
-    Function(String?) onChanged,
-  ) {
+    Function(String?) onChanged, {
+    String? hintText,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2321,49 +2741,63 @@ class _CustomerCardPageState extends State<CustomerCardPage>
           style: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF334155),
-            letterSpacing: -0.1,
+            color: Color(0xFF1E293B),
+            letterSpacing: -0.3,
           ),
         ),
-        const SizedBox(height: 9),
+        const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: value,
+          value: value.isEmpty ? null : value,
           items: items
               .map((item) => DropdownMenuItem(value: item, child: Text(item)))
               .toList(),
           onChanged: onChanged,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1E293B),
+            letterSpacing: -0.2,
           ),
           decoration: InputDecoration(
+            hintText: hintText ?? 'Seçiniz',
+            hintStyle: const TextStyle(
+              fontSize: 15,
+              color: Color(0xFF8E8E93),
+              fontWeight: FontWeight.w400,
+              letterSpacing: -0.2,
+            ),
             filled: true,
             fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 13,
+              horizontal: 16,
+              vertical: 14,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(
-                color: Color(0xFFCBD5E1),
-                width: 1.5,
+                color: Color(0xFFD1D1D6),
+                width: 1,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(
-                color: Color(0xFFCBD5E1),
-                width: 1.5,
+                color: Color(0xFFD1D1D6),
+                width: 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(
-                color: Color(0xFF2563EB),
+                color: Color(0xFF007AFF),
                 width: 2,
               ),
+            ),
+            errorMaxLines: 2,
+            errorStyle: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFFFF3B30),
+              height: 1.2,
             ),
           ),
         ),
@@ -2387,8 +2821,8 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF334155),
-                letterSpacing: -0.1,
+                color: Color(0xFF1E293B),
+                letterSpacing: -0.3,
               ),
             ),
             if (isRequired)
@@ -2402,45 +2836,47 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               ),
           ],
         ),
-        const SizedBox(height: 9),
+        const SizedBox(height: 8),
         TextField(
           controller: controller,
           onSubmitted: (_) => onSearch(),
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.w500,
             color: Color(0xFF1E293B),
+            letterSpacing: -0.2,
           ),
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 13,
+              horizontal: 16,
+              vertical: 14,
             ),
             suffixIcon: IconButton(
-              icon: const Icon(Icons.more_horiz, color: Color(0xFF64748B)),
+              icon: const Icon(Icons.more_horiz,
+                  color: Color(0xFF8E8E93), size: 20),
               onPressed: onSearch,
               tooltip: 'Ara',
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(
-                color: Color(0xFFCBD5E1),
-                width: 1.5,
+                color: Color(0xFFD1D1D6),
+                width: 1,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(
-                color: Color(0xFFCBD5E1),
-                width: 1.5,
+                color: Color(0xFFD1D1D6),
+                width: 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(
-                color: Color(0xFF2563EB),
+                color: Color(0xFF007AFF),
                 width: 2,
               ),
             ),
@@ -2506,19 +2942,22 @@ class _TaxOfficeSearchDialogState extends State<_TaxOfficeSearchDialog> {
           children: [
             Row(
               children: [
-                const Icon(Icons.search, color: Color(0xFF3498DB)),
+                const Icon(Icons.search_rounded,
+                    color: Color(0xFF007AFF), size: 24),
                 const SizedBox(width: 12),
                 const Text(
                   'Vergi Dairesi Ara',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2C3E50),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1E293B),
+                    letterSpacing: -0.4,
                   ),
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close_rounded, size: 20),
+                  color: const Color(0xFF8E8E93),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -2530,32 +2969,35 @@ class _TaxOfficeSearchDialogState extends State<_TaxOfficeSearchDialog> {
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
+                letterSpacing: -0.2,
               ),
               decoration: InputDecoration(
                 hintText: 'Kod veya vergi dairesi adı ile arayın...',
                 hintStyle: const TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 14,
+                  color: Color(0xFF8E8E93),
+                  fontSize: 15,
+                  letterSpacing: -0.2,
                 ),
-                prefixIcon: const Icon(Icons.search, color: Color(0xFF2563EB)),
+                prefixIcon: const Icon(Icons.search_rounded,
+                    color: Color(0xFF007AFF), size: 20),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: const Color(0xFFF2F2F7),
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                   borderSide:
-                      const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
+                      const BorderSide(color: Color(0xFFD1D1D6), width: 1),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                   borderSide:
-                      const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
+                      const BorderSide(color: Color(0xFFD1D1D6), width: 1),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                   borderSide:
-                      const BorderSide(color: Color(0xFF2563EB), width: 2),
+                      const BorderSide(color: Color(0xFF007AFF), width: 2),
                 ),
               ),
             ),
@@ -2566,24 +3008,36 @@ class _TaxOfficeSearchDialogState extends State<_TaxOfficeSearchDialog> {
                 itemBuilder: (context, index) {
                   final entry = _filteredList[index];
                   return ListTile(
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     leading: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: 10,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3498DB).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
+                        color: const Color(0xFF007AFF).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         entry.key,
                         style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF3498DB),
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF007AFF),
+                          fontSize: 13,
+                          letterSpacing: -0.2,
                         ),
                       ),
                     ),
-                    title: Text(entry.value),
+                    title: Text(
+                      entry.value,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF1E293B),
+                        letterSpacing: -0.2,
+                      ),
+                    ),
                     onTap: () {
                       widget.onSelected(entry.key, entry.value);
                       Navigator.pop(context);
@@ -2665,74 +3119,46 @@ class _CompanyCodeSearchDialogState extends State<_CompanyCodeSearchDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         width: 600,
         height: 500,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFF8FAFC),
-              Color(0xFFFFFFFF),
-              Color(0xFFF1F5F9),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF2563EB).withOpacity(0.2)),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF2563EB),
-                    Color(0xFF3B82F6),
-                    Color(0xFF60A5FA),
-                  ],
-                ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF2563EB).withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8F9FA),
+                border: Border(
+                  bottom: BorderSide(
+                    color: Color(0xFFE5E5EA),
+                    width: 1,
                   ),
-                ],
+                ),
               ),
               child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.business,
-                        color: Colors.white, size: 24),
-                  ),
-                  const SizedBox(width: 14),
+                  const Icon(Icons.business_rounded,
+                      color: Color(0xFF007AFF), size: 24),
+                  const SizedBox(width: 12),
                   const Text(
                     'Şirket Kodu Ara',
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: -0.3,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1E293B),
+                      letterSpacing: -0.4,
                     ),
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: const Icon(Icons.close_rounded, size: 20),
+                    color: const Color(0xFF8E8E93),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -2750,27 +3176,28 @@ class _CompanyCodeSearchDialogState extends State<_CompanyCodeSearchDialog> {
                 decoration: InputDecoration(
                   labelText: 'Arama (en az 3 karakter)',
                   labelStyle: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 14,
+                    color: Color(0xFF8E8E93),
+                    fontSize: 15,
+                    letterSpacing: -0.2,
                   ),
-                  prefixIcon:
-                      const Icon(Icons.search, color: Color(0xFF2563EB)),
+                  prefixIcon: const Icon(Icons.search_rounded,
+                      color: Color(0xFF007AFF), size: 20),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: const Color(0xFFF2F2F7),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     borderSide:
-                        const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
+                        const BorderSide(color: Color(0xFFD1D1D6), width: 1),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     borderSide:
-                        const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
+                        const BorderSide(color: Color(0xFFD1D1D6), width: 1),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     borderSide:
-                        const BorderSide(color: Color(0xFF2563EB), width: 2),
+                        const BorderSide(color: Color(0xFF007AFF), width: 2),
                   ),
                 ),
               ),
@@ -2783,44 +3210,31 @@ class _CompanyCodeSearchDialogState extends State<_CompanyCodeSearchDialog> {
                   itemBuilder: (context, index) {
                     final item = _filteredList[index];
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: const Color(0xFFE2E8F0),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
+                      margin: const EdgeInsets.only(bottom: 1),
                       child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                         leading: Container(
-                          padding: const EdgeInsets.all(8),
+                          width: 48,
+                          height: 48,
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
-                            ),
+                            color: const Color(0xFF007AFF).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.business,
-                              color: Colors.white, size: 20),
+                          child: const Icon(Icons.business_rounded,
+                              color: Color(0xFF007AFF), size: 24),
                         ),
                         title: Text(
                           '${item['code']} - ${item['name']}',
                           style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
                             color: Color(0xFF1E293B),
+                            letterSpacing: -0.2,
                           ),
                         ),
-                        trailing: const Icon(Icons.arrow_forward_ios,
-                            size: 14, color: Color(0xFF94A3B8)),
+                        trailing: const Icon(Icons.chevron_right_rounded,
+                            size: 20, color: Color(0xFF8E8E93)),
                         onTap: () {
                           widget.onSelected(item['code']!, item['name']!);
                           Navigator.pop(context);

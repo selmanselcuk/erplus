@@ -1482,7 +1482,8 @@ class _ERPlusShellState extends State<ERPlusShell> {
   Widget _buildWorkspaceTabs() {
     return Container(
       height: 46,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding:
+          const EdgeInsets.fromLTRB(12, 6, 12, 0), // Alt padding kaldırıldı
       decoration: BoxDecoration(
         color: Theme.of(
           context,
@@ -1502,116 +1503,119 @@ class _ERPlusShellState extends State<ERPlusShell> {
         trackVisibility: true,
         thickness: 6,
         radius: const Radius.circular(3),
-        child: ListView.separated(
-          controller: _tabScrollController,
-          scrollDirection: Axis.horizontal,
-          itemCount: _tabs.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 6),
-          itemBuilder: (context, index) {
-            final tab = _tabs[index];
-            final isActive = tab.id == _activeTabId;
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 6), // Scrollbar için boşluk
+          child: ListView.separated(
+            controller: _tabScrollController,
+            scrollDirection: Axis.horizontal,
+            itemCount: _tabs.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 6),
+            itemBuilder: (context, index) {
+              final tab = _tabs[index];
+              final isActive = tab.id == _activeTabId;
 
-            return MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _activeTabId = tab.id;
+              return MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _activeTabId = tab.id;
 
-                    if (tab.id.startsWith('module_')) {
-                      _selectedMenuIndex = int.parse(
-                        tab.id.substring('module_'.length),
-                      );
-                    } else if (tab.id == 'customer_card') {
-                      _selectedMenuIndex = 1;
-                    }
-                  });
-                  _scrollToActiveTab();
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeOutCubic,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(7),
-                    color: isActive
-                        ? const Color(0xFFF5F5F7) // Aktif sekme açık gri
-                        : Colors.transparent,
-                    boxShadow: isActive
-                        ? [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 4,
-                              offset: const Offset(0, 1),
-                            ),
-                          ]
-                        : null,
-                    border: isActive
-                        ? Border.all(
-                            color: Colors.black.withOpacity(0.06),
-                            width: 0.5,
-                          )
-                        : null,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        tab.icon,
-                        size: 15,
-                        color: isActive
-                            ? const Color(0xFF007AFF)
-                            : const Color(0xFF8E8E93),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        tab.label,
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight:
-                              isActive ? FontWeight.w600 : FontWeight.w500,
+                      if (tab.id.startsWith('module_')) {
+                        _selectedMenuIndex = int.parse(
+                          tab.id.substring('module_'.length),
+                        );
+                      } else if (tab.id == 'customer_card') {
+                        _selectedMenuIndex = 1;
+                      }
+                    });
+                    _scrollToActiveTab();
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(7),
+                      color: isActive
+                          ? const Color(0xFFF5F5F7) // Aktif sekme açık gri
+                          : Colors.transparent,
+                      boxShadow: isActive
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ]
+                          : null,
+                      border: isActive
+                          ? Border.all(
+                              color: Colors.black.withOpacity(0.06),
+                              width: 0.5,
+                            )
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          tab.icon,
+                          size: 15,
                           color: isActive
-                              ? const Color(0xFF1D1D1F)
-                              : const Color(0xFF86868B),
-                          letterSpacing: -0.08,
+                              ? const Color(0xFF007AFF)
+                              : const Color(0xFF8E8E93),
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      // X butonu
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: () => _closeTab(tab.id),
-                          child: Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isActive
-                                  ? const Color(0xFFE5E5EA)
-                                  : Colors.transparent,
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.close_rounded,
-                                size: 11,
+                        const SizedBox(width: 6),
+                        Text(
+                          tab.label,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight:
+                                isActive ? FontWeight.w600 : FontWeight.w500,
+                            color: isActive
+                                ? const Color(0xFF1D1D1F)
+                                : const Color(0xFF86868B),
+                            letterSpacing: -0.08,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        // X butonu
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () => _closeTab(tab.id),
+                            child: Container(
+                              width: 16,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
                                 color: isActive
-                                    ? const Color(0xFF86868B)
-                                    : const Color(0xFFAEAEB2),
+                                    ? const Color(0xFFE5E5EA)
+                                    : Colors.transparent,
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 11,
+                                  color: isActive
+                                      ? const Color(0xFF86868B)
+                                      : const Color(0xFFAEAEB2),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
