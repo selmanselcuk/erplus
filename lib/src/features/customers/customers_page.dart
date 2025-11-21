@@ -1,22 +1,28 @@
 import 'package:flutter/material.dart';
 import '../../widgets/page_loading_overlay.dart';
 
-// Müşteri Kartı ve Liste içeriğini embed etmek için
+// Müşteri Kartı içeriğini embed etmek için
 import 'customer_card_page.dart';
-import 'customer_list_page.dart';
 
 /// Sayfa modu: L2 hub mı gösteriliyor, yoksa seçili L2'nin L3 menüleri mi?
 enum _PageMode { hub, section }
 
 class CustomersPage extends StatefulWidget {
-  const CustomersPage(
-      {super.key, this.onOpenCustomerCard, this.onOpenCustomerList});
+  const CustomersPage({
+    super.key,
+    this.onOpenCustomerCard,
+    this.onOpenCustomerList,
+    this.onOpenCustomer360,
+  });
 
   // L3 "Müşteri Kartı"na tıklanınca çağrılacak callback
   final VoidCallback? onOpenCustomerCard;
 
   // L3 "Müşteri Listesi"ne tıklanınca çağrılacak callback
   final VoidCallback? onOpenCustomerList;
+
+  // L3 "Müşteri 360"a tıklanınca çağrılacak callback
+  final VoidCallback? onOpenCustomer360;
 
   @override
   State<CustomersPage> createState() => _CustomersPageState();
@@ -29,9 +35,6 @@ class _CustomersPageState extends State<CustomersPage> with PageLoadingMixin {
   /// Müşteri Yönetimi > Müşteri Kartı seçildiğinde
   /// L3 grid yerine TabBar + CustomerCardView gösterilsin mi?
   bool _showCustomerCardTabs = false;
-
-  /// Müşteri Listesi görünümü aktif mi?
-  bool _showCustomerList = false;
 
   /// L2 → L3 geçiş
   Future<void> _navigateToSection(_L2Section section) async {
@@ -270,22 +273,13 @@ class _CustomersPageState extends State<CustomersPage> with PageLoadingMixin {
           ),
           const SizedBox(height: 14),
 
-          // Burada üç mod var:
+          // Burada iki mod var:
           // 1) Normal: L3 grid (tüm feature kartları)
           // 2) Eğer Müşteri Yönetimi > Müşteri Kartı seçildiyse: TabBar + CustomerCardView
-          // 3) Eğer Müşteri Listesi seçildiyse: CustomerListPage
           Expanded(
-            child: _showCustomerList && section.id == 'musteri'
-                ? CustomerListPage(
-                    onOpenCustomerCard: (customerId) {
-                      if (widget.onOpenCustomerCard != null) {
-                        widget.onOpenCustomerCard!();
-                      }
-                    },
-                  )
-                : (_showCustomerCardTabs && section.id == 'musteri'
-                    ? _buildCustomerCardTabs()
-                    : _buildL3Grid(section, features)),
+            child: _showCustomerCardTabs && section.id == 'musteri'
+                ? _buildCustomerCardTabs()
+                : _buildL3Grid(section, features),
           ),
         ],
       ),
@@ -330,6 +324,14 @@ class _CustomersPageState extends State<CustomersPage> with PageLoadingMixin {
                   if (section.id == 'musteri' && f.id == 'musteri-liste') {
                     if (widget.onOpenCustomerList != null) {
                       widget.onOpenCustomerList!(); // Shell'de yeni sekme aç
+                    }
+                    return;
+                  }
+
+                  // 🔹 Eğer L2 = Müşteri Yönetimi ve L3 = "Müşteri 360" ise:
+                  if (section.id == 'musteri' && f.id == 'musteri-360') {
+                    if (widget.onOpenCustomer360 != null) {
+                      widget.onOpenCustomer360!(); // Shell'de yeni sekme aç
                     }
                     return;
                   }

@@ -4,6 +4,7 @@ import '../features/dashboard/dashboard_page.dart';
 import '../features/customers/customers_page.dart';
 import '../features/customers/customer_card_page.dart';
 import '../features/customers/customer_list_page.dart';
+import '../features/customers/customer_360_page.dart';
 
 class ERPlusShell extends StatefulWidget {
   const ERPlusShell({super.key});
@@ -40,7 +41,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
   static const _menuItems = <_MenuItem>[
     _MenuItem(Icons.space_dashboard_rounded, 'Dashboard'),
     _MenuItem(Icons.groups_rounded, 'Cari Hesap Yönetimi'),
-    _MenuItem(Icons.inventory_2_rounded, 'Ürün Yönetimi'),
+    _MenuItem(Icons.inventory_2_rounded, 'Stok & Ürün Yönetimi'),
     _MenuItem(Icons.trending_up_rounded, 'Satış Yönetimi'),
     _MenuItem(Icons.shopping_bag_rounded, 'Satın Alma Yönetimi'),
     _MenuItem(Icons.account_balance_wallet_rounded, 'Finans Yönetimi'),
@@ -70,6 +71,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
         builder = (ctx) => CustomersPage(
               onOpenCustomerCard: _openCustomerCardTab,
               onOpenCustomerList: _openCustomerListTab,
+              onOpenCustomer360: _openCustomer360Tab,
             );
         break;
       default:
@@ -140,6 +142,27 @@ class _ERPlusShellState extends State<ERPlusShell> {
           builder: (ctx) => CustomerListPage(
             onOpenCustomerCard: (customerId) => _openCustomerCardTab(),
           ),
+        ),
+      );
+    }
+
+    setState(() {
+      _activeTabId = id;
+      _selectedMenuIndex = 1; // Cari modülü
+    });
+  }
+
+  void _openCustomer360Tab() {
+    const id = 'customer_360';
+
+    final existingIndex = _tabs.indexWhere((t) => t.id == id);
+    if (existingIndex == -1) {
+      _tabs.add(
+        _WorkspaceTabItem(
+          id: id,
+          icon: Icons.dashboard_customize_outlined,
+          label: 'Müşteri 360',
+          builder: (ctx) => const Customer360Page(),
         ),
       );
     }
