@@ -297,10 +297,10 @@ class _CustomersPageState extends State<CustomersPage> with PageLoadingMixin {
                 // 1) GENEL BİLGİLER – Müşteri Kartı formu
                 CustomerCardPage(
                   onClose: () {
-                    setState(() {
-                      _showCustomerCardTabs = false;
-                    });
+                    // TabBar içinde gösterildiği için kapatma işlemi yapılmaz
+                    // veya alternatif olarak L3 grid'e dönülebilir
                   },
+                  customerId: null,
                 ),
 
                 // 2) ADRESLER – şimdilik placeholder

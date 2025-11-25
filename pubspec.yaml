@@ -17,9 +17,19 @@ dependencies:
   # Sayı formatlama
   intl: ^0.19.0
 
-  # UI – opsiyonel, ileride kullanırsın (şimdilik yorum satırı)
-  # provider: ^6.1.2
-  # http: ^1.2.2
+  # State management
+  provider: ^6.1.2
+  
+  # Local database (şimdilik SQLite, sonra API'ye geçeriz)
+  sqflite_common_ffi: ^2.3.0
+  path: ^1.9.0
+  path_provider: ^2.1.1
+  
+  # JSON serialization
+  json_annotation: ^4.8.1
+  
+  # UUID generator
+  uuid: ^4.2.1
 
 dev_dependencies:
   flutter_test:
@@ -27,6 +37,10 @@ dev_dependencies:
 
   # Flutter lints – Flutter 3.22 ile UYUMLU sürüm
   flutter_lints: ^4.0.0
+  
+  # Code generation
+  build_runner: ^2.4.7
+  json_serializable: ^6.7.1
 
 flutter:
   uses-material-design: true

@@ -12,7 +12,7 @@ class ERPlusApp extends StatelessWidget {
 
       // 🎨 BURADAN TEMAYI SEÇİYORSUN:
       //theme: _appleLightTheme,
-      theme: _corporateLightTheme,
+      theme: _sfProTheme,
       //theme: _materialLightTheme,
       home: const ERPlusShell(),
     );
@@ -52,34 +52,97 @@ final ThemeData _appleLightTheme = ThemeData(
 );
 
 // ------------------------------------------------------------
-// 🎨 B) Modern Kurumsal Light (Microsoft 365)
+// 🎨 B) SF Pro Display Premium Theme (Apple Style)
 // ------------------------------------------------------------
-final ThemeData _corporateLightTheme = ThemeData(
+final ThemeData _sfProTheme = ThemeData(
   brightness: Brightness.light,
   useMaterial3: true,
-  scaffoldBackgroundColor: const Color(0xFFEFF4FF), // hafif mavi-gri
-
+  scaffoldBackgroundColor: const Color(0xFFF5F7FA),
+  fontFamily: '.SF Pro Display',
   colorScheme: const ColorScheme.light(
-    primary: Color(0xFF1D4ED8),
-    secondary: Color(0xFF0EA5E9),
-    surface: Color(0xFFF9FAFB),
+    primary: Color(0xFF007AFF),
+    secondary: Color(0xFF5AC8FA),
+    surface: Colors.white,
   ),
-  cardColor: const Color(0xFFF9FAFB),
+  cardColor: Colors.white,
   appBarTheme: const AppBarTheme(
-    backgroundColor: Color(0xFFF9FAFB),
+    backgroundColor: Colors.white,
     elevation: 0,
-    iconTheme: IconThemeData(color: Color(0xFF111827)),
+    iconTheme: IconThemeData(color: Color(0xFF1C1C1E)),
     titleTextStyle: TextStyle(
-      color: Color(0xFF111827),
+      color: Color(0xFF1C1C1E),
       fontSize: 18,
       fontWeight: FontWeight.w600,
+      fontFamily: '.SF Pro Display',
+      letterSpacing: -0.5,
     ),
   ),
   textTheme: const TextTheme(
-    bodyMedium: TextStyle(color: Color(0xFF111827)),
-    bodySmall: TextStyle(color: Color(0xFF6B7280)),
+    displayLarge: TextStyle(
+      fontFamily: '.SF Pro Display',
+      fontSize: 34,
+      fontWeight: FontWeight.w700,
+      color: Color(0xFF1C1C1E),
+      letterSpacing: -1.0,
+    ),
+    displayMedium: TextStyle(
+      fontFamily: '.SF Pro Display',
+      fontSize: 28,
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF1C1C1E),
+      letterSpacing: -0.8,
+    ),
+    displaySmall: TextStyle(
+      fontFamily: '.SF Pro Display',
+      fontSize: 22,
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF1C1C1E),
+      letterSpacing: -0.6,
+    ),
+    headlineMedium: TextStyle(
+      fontFamily: '.SF Pro Display',
+      fontSize: 17,
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF1C1C1E),
+      letterSpacing: -0.4,
+    ),
+    bodyLarge: TextStyle(
+      fontFamily: '.SF Pro Display',
+      fontSize: 17,
+      fontWeight: FontWeight.w400,
+      color: Color(0xFF1C1C1E),
+      letterSpacing: -0.4,
+    ),
+    bodyMedium: TextStyle(
+      fontFamily: '.SF Pro Display',
+      fontSize: 15,
+      fontWeight: FontWeight.w400,
+      color: Color(0xFF1C1C1E),
+      letterSpacing: -0.3,
+    ),
+    bodySmall: TextStyle(
+      fontFamily: '.SF Pro Display',
+      fontSize: 13,
+      fontWeight: FontWeight.w400,
+      color: Color(0xFF8E8E93),
+      letterSpacing: -0.1,
+    ),
+    labelLarge: TextStyle(
+      fontFamily: '.SF Pro Display',
+      fontSize: 15,
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF1C1C1E),
+      letterSpacing: -0.3,
+    ),
+    labelMedium: TextStyle(
+      fontFamily: '.SF Pro Display',
+      fontSize: 13,
+      fontWeight: FontWeight.w500,
+      color: Color(0xFF1C1C1E),
+      letterSpacing: -0.1,
+    ),
   ),
-  dividerColor: Color(0xFFD1D5DB),
+  dividerColor: const Color(0xFFE5E5EA),
   splashColor: Colors.transparent,
   highlightColor: Colors.transparent,
 );

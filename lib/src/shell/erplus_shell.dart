@@ -637,7 +637,10 @@ class _ERPlusShellState extends State<ERPlusShell> {
           id: id,
           icon: Icons.person_rounded,
           label: 'Müşteri Kartı',
-          builder: (ctx) => CustomerCardPage(onClose: _closeCustomerCardTab),
+          builder: (ctx) => CustomerCardPage(
+            onClose: () => _closeTab(id),
+            customerId: null,
+          ),
         ),
       );
     }
@@ -648,8 +651,6 @@ class _ERPlusShellState extends State<ERPlusShell> {
     });
     _scrollToActiveTab();
   }
-
-  void _closeCustomerCardTab() => _closeTab('customer_card');
 
   void _openCustomerListTab() {
     const id = 'customer_list';
