@@ -104,6 +104,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
   // Ticari bilgiler
   final TextEditingController _riskLimitiController = TextEditingController();
   final TextEditingController _vadeSuresiController = TextEditingController();
+  String? _selectedOdemeSekli;
   String? _selectedParaBirimi;
   final TextEditingController _iskontoController = TextEditingController();
   final TextEditingController _yetkiliKisiController = TextEditingController();
@@ -1390,10 +1391,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             const SizedBox(height: 14),
             _buildAdresAraField(),
             const SizedBox(height: 12),
+            // İl | İlçe | Mahalle
             Row(
               children: [
                 Expanded(
-                  flex: 4,
                   child: _buildPremiumDropdown(
                     label: 'İl',
                     hint: 'İl seçin',
@@ -1418,7 +1419,6 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  flex: 4,
                   child: _buildPremiumDropdown(
                     label: 'İlçe',
                     hint: 'İlçe seçin',
@@ -1437,7 +1437,41 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  flex: 3,
+                  child: _buildPremiumTextField(
+                    label: 'Mahalle',
+                    hint: 'Mahalle adı',
+                    icon: Icons.home_work_rounded,
+                    controller: _mahalleController,
+                    accentColor: const Color(0xFFFF9500),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Cadde | Sokak | Posta Kodu
+            Row(
+              children: [
+                Expanded(
+                  child: _buildPremiumTextField(
+                    label: 'Cadde',
+                    hint: 'Cadde adı',
+                    icon: Icons.signpost_rounded,
+                    controller: _caddeController,
+                    accentColor: const Color(0xFFFF9500),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildPremiumTextField(
+                    label: 'Sokak',
+                    hint: 'Sokak adı',
+                    icon: Icons.route_rounded,
+                    controller: _sokakController,
+                    accentColor: const Color(0xFFFF9500),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
                   child: _buildPremiumTextField(
                     label: 'Posta Kodu',
                     hint: '42000',
@@ -1450,12 +1484,12 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             ),
             const SizedBox(height: 12),
             _buildPremiumTextField(
-              label: 'Adres',
-              hint: 'Mahalle, Cadde, Sokak, No, Daire',
+              label: 'Adres Detayı',
+              hint: 'Bina no, kat, daire vb.',
               icon: Icons.home_outlined,
               controller: _adresController,
               accentColor: const Color(0xFFFF9500),
-              maxLines: 2,
+              maxLines: 4,
             ),
 
             const SizedBox(height: 24),
@@ -1466,7 +1500,6 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             Row(
               children: [
                 Expanded(
-                  flex: 4,
                   child: _buildPremiumTextField(
                     label: 'Risk Limiti',
                     hint: '0.00',
@@ -1478,9 +1511,8 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  flex: 3,
                   child: _buildPremiumTextField(
-                    label: 'Vade Süresi',
+                    label: 'Vade',
                     hint: '0',
                     icon: Icons.event_note_rounded,
                     controller: _vadeSuresiController,
@@ -1490,7 +1522,32 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  flex: 4,
+                  child: _buildPremiumDropdown(
+                    label: 'Ödeme Şekli',
+                    hint: 'Seçiniz',
+                    icon: Icons.payment_rounded,
+                    items: [
+                      'Nakit',
+                      'Kredi Kartı',
+                      'Havale/EFT',
+                      'Çek',
+                      'Senet'
+                    ],
+                    value: _selectedOdemeSekli,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedOdemeSekli = value;
+                      });
+                    },
+                    accentColor: const Color(0xFFAF52DE),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
                   child: _buildPremiumDropdown(
                     label: 'Para Birimi',
                     hint: 'Seçiniz',
@@ -1505,13 +1562,8 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     accentColor: const Color(0xFFAF52DE),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
+                const SizedBox(width: 12),
                 Expanded(
-                  flex: 3,
                   child: _buildPremiumTextField(
                     label: 'İskonto Oranı',
                     hint: '0',
@@ -1523,7 +1575,6 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  flex: 5,
                   child: _buildPremiumTextField(
                     label: 'Yetkili Kişi',
                     hint: 'Satış sorumlusu adı',
@@ -3001,7 +3052,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: 12,
-                            vertical: maxLines > 1 ? 7 : 0,
+                            vertical: maxLines > 1 ? 8 : 9,
                           ),
                           isDense: true,
                         ),
