@@ -1,5 +1,7 @@
 ﻿import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../core/utils/number_formatters.dart';
 
 class CustomerCardPage extends StatefulWidget {
   final VoidCallback onClose;
@@ -27,8 +29,8 @@ class _CustomerCardPageState extends State<CustomerCardPage>
       activeColor: Color(0xFF007AFF),
     ),
     _TabItem(
-      icon: Icons.phone_outlined,
-      label: 'İletişim',
+      icon: Icons.location_on_outlined,
+      label: 'Adresler',
       activeColor: Color(0xFF34C759),
     ),
     _TabItem(
@@ -107,15 +109,108 @@ class _CustomerCardPageState extends State<CustomerCardPage>
   String? _selectedOdemeSekli;
   String? _selectedParaBirimi;
   final TextEditingController _iskontoController = TextEditingController();
+
+  // FocusNodes for numeric fields
+  final FocusNode _riskLimitiFocusNode = FocusNode();
+  final FocusNode _iskontoFocusNode = FocusNode();
   final TextEditingController _yetkiliKisiController = TextEditingController();
 
   // Vergi dairesi arama sonuçları
   List<Map<String, String>> _vergiDairesiSonuclari = [];
   bool _vergiDairesiAraniyor = false;
 
+  // Vergi sekmesi state değişkenleri
+  String? _selectedVarsayilanKDV;
+  String? _selectedIkinciKDV;
+  bool _kdvIstisnasiVar = false;
+  final TextEditingController _kdvIstisnaKoduController =
+      TextEditingController();
+  bool _ozelMatrahUygulamasi = false;
+  final TextEditingController _ozelMatrahOraniController =
+      TextEditingController();
+  final TextEditingController _kdvTevkifatOraniController =
+      TextEditingController();
+  final TextEditingController _kdvTevkifatKoduController =
+      TextEditingController();
+
+  final TextEditingController _gelirVergisiStopajOraniController =
+      TextEditingController();
+  bool _stopajIstisnasiVar = false;
+  final TextEditingController _stopajIstisnaBelgeTarihiController =
+      TextEditingController();
+  bool _damgaVergisiUygulamasi = false;
+  bool _bsmvUygulamasi = false;
+
+  String? _selectedEFaturaDurumu = 'Değil';
+  String? _selectedEFaturaSenaryosu;
+  final TextEditingController _eFaturaPostaKutusuController =
+      TextEditingController();
+  String? _selectedEArsivDurumu = 'Değil';
+  String? _selectedEIrsaliyeDurumu = 'Değil';
+  bool _eMustahsilUygulamasi = false;
+  String? _selectedEFaturaGonderimSekli = 'Otomatik';
+
+  bool _engelliIndirimiVar = false;
+  final TextEditingController _engelliIndirimiOraniController =
+      TextEditingController();
+  bool _argeIndirimiVar = false;
+  final TextEditingController _argeIndirimiBelgeNoController =
+      TextEditingController();
+  bool _yatirimTesvik = false;
+  final TextEditingController _yatirimTesvikBelgeNoController =
+      TextEditingController();
+  final TextEditingController _yatirimTesvikGecerlilikController =
+      TextEditingController();
+  bool _teknolojiGelistirmeBolgesi = false;
+  bool _serbestBolge = false;
+  bool _osb = false;
+  bool _gumrukMusavirligi = false;
+  final TextEditingController _gumrukMusavirlikBelgeNoController =
+      TextEditingController();
+
+  String? _selectedKDVBeyanDonemi = 'Aylık';
+  bool _geciciVergiMukellefi = false;
+  bool _muhtasarBeyanname = false;
+
+  final TextEditingController _faturaOzelNotController =
+      TextEditingController();
+  final TextEditingController _muhasebeNotlariController =
+      TextEditingController();
+  final TextEditingController _vergiDairesiOzelAnlasmalarController =
+      TextEditingController();
+
+  bool _iadeTalepDurumu = false;
+  String? _selectedIadeYontemi;
+  final TextEditingController _mahsubenIadeIBANController =
+      TextEditingController();
+  String? _selectedVergiIadesiSikligi;
+
+  bool _otvMukellefi = false;
+  final TextEditingController _otvOraniController = TextEditingController();
+
+  final TextEditingController _sonVergiIncelemeTarihiController =
+      TextEditingController();
+  final TextEditingController _sonVergiIncelemeSonucuController =
+      TextEditingController();
+  bool _vergiBorcuVar = false;
+  final TextEditingController _vergiBorcuTutariController =
+      TextEditingController();
+  final TextEditingController _vergiBorcuTaksitController =
+      TextEditingController();
+  bool _uzlasmaSureci = false;
+  bool _ozelgeDurumu = false;
+  final TextEditingController _ozelgeNoController = TextEditingController();
+
+  String? _selectedKDVBeyannameDetay = 'Özet';
+  bool _baFormGerekli = false;
+  bool _formAAGerekli = false;
+
   // Toggle state'leri
   bool _isActive = true;
   bool _isPotential = false;
+
+  // Form değişiklik takibi
+  bool _hasUnsavedChanges = false;
 
   // Adres Yönetim Sistemi
   String? _selectedAdresTuru = 'Fatura Adresi';
@@ -383,7 +478,56 @@ class _CustomerCardPageState extends State<CustomerCardPage>
       _showValidationError('Ünvan alanı zorunludur');
       return false;
     }
+
+    // E-posta formatı kontrolü
+    if (_epostaController.text.trim().isNotEmpty) {
+      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+      if (!emailRegex.hasMatch(_epostaController.text.trim())) {
+        _showValidationError('Geçerli bir e-posta adresi giriniz');
+        return false;
+      }
+    }
+
+    // Telefon numarası kontrolü
+    if (_telefonController.text.trim().isNotEmpty) {
+      final cleanPhone =
+          _telefonController.text.replaceAll(RegExp(r'[^0-9]'), '');
+      if (cleanPhone.length != 11) {
+        _showValidationError('Telefon numarası 11 haneli olmalıdır');
+        return false;
+      }
+    }
+
+    // Vergi No kontrolü (10 haneli olmalı)
+    if (_vergiNoController.text.trim().isNotEmpty &&
+        _vergiNoController.text.length != 10) {
+      _showValidationError('Vergi numarası 10 haneli olmalıdır');
+      return false;
+    }
+
+    // TC Kimlik No kontrolü (11 haneli olmalı)
+    if (_tcKimlikNoController.text.trim().isNotEmpty &&
+        _tcKimlikNoController.text.length != 11) {
+      _showValidationError('TC Kimlik numarası 11 haneli olmalıdır');
+      return false;
+    }
+
     return true;
+  }
+
+  // Form doluluk kontrolü
+  bool _hasFormData() {
+    return _unvanController.text.trim().isNotEmpty ||
+        _unvan2Controller.text.trim().isNotEmpty ||
+        _kisaAdController.text.trim().isNotEmpty ||
+        _vergiNoController.text.trim().isNotEmpty ||
+        _tcKimlikNoController.text.trim().isNotEmpty ||
+        _telefonController.text.trim().isNotEmpty ||
+        _cepTelefonuController.text.trim().isNotEmpty ||
+        _epostaController.text.trim().isNotEmpty ||
+        _selectedAccountType != null ||
+        _selectedIl != null ||
+        _kayitliAdresler.isNotEmpty;
   }
 
   void _showValidationError(String message) {
@@ -499,6 +643,8 @@ class _CustomerCardPageState extends State<CustomerCardPage>
 
     // Yeni kayıt için formu temizle ve yeni geçici kod ata
     setState(() {
+      _hasUnsavedChanges = false; // Kayıt yapıldı, değişiklikler temizlendi
+
       // Mevcut hesap tipine göre yeni geçici kod üret
       if (_selectedAccountType != null) {
         _tempAccountCode = _generateTempAccountCode(_selectedAccountType!);
@@ -516,6 +662,85 @@ class _CustomerCardPageState extends State<CustomerCardPage>
     });
   }
 
+  // Çıkış uyarısı göster
+  Future<bool> _showExitConfirmation() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF9500).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.warning_rounded,
+                color: Color(0xFFFF9500),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Kaydedilmemiş Değişiklikler',
+              style: TextStyle(
+                fontFamily: '.SF Pro Display',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1C1C1E),
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinize emin misiniz?',
+          style: TextStyle(
+            fontFamily: '.SF Pro Display',
+            fontSize: 14,
+            color: Color(0xFF8E8E93),
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(
+              'İptal',
+              style: TextStyle(
+                fontFamily: '.SF Pro Display',
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF007AFF),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF3B30),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Çık',
+              style: TextStyle(
+                fontFamily: '.SF Pro Display',
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -529,6 +754,28 @@ class _CustomerCardPageState extends State<CustomerCardPage>
     });
     // Hesap kodu başlangıçta boş
     _accountCodeController.text = '';
+
+    // Add listeners for decimal formatting on blur
+    _riskLimitiFocusNode.addListener(_onRiskLimitiFocusChange);
+    _iskontoFocusNode.addListener(_onIskontoFocusChange);
+
+    // Form değişiklik takibi için listener'lar ekle
+    _unvanController
+        .addListener(() => setState(() => _hasUnsavedChanges = true));
+    _unvan2Controller
+        .addListener(() => setState(() => _hasUnsavedChanges = true));
+    _kisaAdController
+        .addListener(() => setState(() => _hasUnsavedChanges = true));
+    _vergiNoController
+        .addListener(() => setState(() => _hasUnsavedChanges = true));
+    _tcKimlikNoController
+        .addListener(() => setState(() => _hasUnsavedChanges = true));
+    _telefonController
+        .addListener(() => setState(() => _hasUnsavedChanges = true));
+    _cepTelefonuController
+        .addListener(() => setState(() => _hasUnsavedChanges = true));
+    _epostaController
+        .addListener(() => setState(() => _hasUnsavedChanges = true));
   }
 
   @override
@@ -556,7 +803,57 @@ class _CustomerCardPageState extends State<CustomerCardPage>
     _vadeSuresiController.dispose();
     _iskontoController.dispose();
     _yetkiliKisiController.dispose();
+    _riskLimitiFocusNode.dispose();
+    _iskontoFocusNode.dispose();
     super.dispose();
+  }
+
+  // Ondalık formatlama fonksiyonları
+  void _onRiskLimitiFocusChange() {
+    if (!_riskLimitiFocusNode.hasFocus) {
+      _formatDecimalField(_riskLimitiController, 2);
+    }
+  }
+
+  void _onIskontoFocusChange() {
+    if (!_iskontoFocusNode.hasFocus) {
+      _formatDecimalField(_iskontoController, 2);
+    }
+  }
+
+  void _formatDecimalField(TextEditingController controller, int decimals) {
+    String text = controller.text.trim();
+    if (text.isEmpty) return;
+
+    // Noktaları temizle ve virgülü noktaya çevir
+    text = text.replaceAll('.', '').replaceAll(',', '.');
+
+    try {
+      double value = double.parse(text);
+
+      // Türk formatına çevir
+      String integerPart = value.floor().toString();
+      String decimalPart = ((value - value.floor()) * 100)
+          .round()
+          .toString()
+          .padLeft(decimals, '0');
+
+      // Binlik ayracı ekle
+      String formattedInteger = '';
+      int count = 0;
+      for (int i = integerPart.length - 1; i >= 0; i--) {
+        if (count == 3) {
+          formattedInteger = '.' + formattedInteger;
+          count = 0;
+        }
+        formattedInteger = integerPart[i] + formattedInteger;
+        count++;
+      }
+
+      controller.text = '$formattedInteger,$decimalPart';
+    } catch (e) {
+      // Hatalı format, olduğu gibi bırak
+    }
   }
 
   // Adres Ekle Butonu
@@ -597,26 +894,55 @@ class _CustomerCardPageState extends State<CustomerCardPage>
   // Adres kaydetme
   void _adresEkle() {
     if (_selectedAdresTuru == null || _selectedAdresTuru!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('⚠️ Lütfen adres türü seçiniz')),
-      );
+      _showValidationError('Lütfen adres türü seçiniz');
       return;
     }
-    if (_selectedIl == null || _selectedIl!.isEmpty) {
+
+    // En az bir adres bilgisi girilmiş olmalı
+    final hasAnyAddress = _selectedIl != null ||
+        _mahalleController.text.trim().isNotEmpty ||
+        _caddeController.text.trim().isNotEmpty ||
+        _sokakController.text.trim().isNotEmpty ||
+        _adresController.text.trim().isNotEmpty ||
+        _adresDetayController.text.trim().isNotEmpty;
+
+    if (!hasAnyAddress) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('⚠️ Lütfen il seçiniz')),
-      );
-      return;
-    }
-    if (_selectedIlce == null || _selectedIlce!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('⚠️ Lütfen ilçe seçiniz')),
-      );
-      return;
-    }
-    if (_adresDetayController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('⚠️ Lütfen adres detayı giriniz')),
+        SnackBar(
+          content: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.warning_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Lütfen en az bir adres bilgisi giriniz',
+                  style: TextStyle(
+                    fontFamily: '.SF Pro Display',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFFF9500),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 3),
+          margin: const EdgeInsets.all(16),
+        ),
       );
       return;
     }
@@ -709,9 +1035,9 @@ class _CustomerCardPageState extends State<CustomerCardPage>
   void _kaydetVeTemizle({required bool guncelle}) {
     final yeniAdres = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
-      'tur': _selectedAdresTuru!,
-      'il': _selectedIl!,
-      'ilce': _selectedIlce!,
+      'tur': _selectedAdresTuru ?? '',
+      'il': _selectedIl ?? '',
+      'ilce': _selectedIlce ?? '',
       'mahalle': _mahalleController.text,
       'cadde': _caddeController.text,
       'sokak': _sokakController.text,
@@ -1065,8 +1391,8 @@ class _CustomerCardPageState extends State<CustomerCardPage>
       physics: const NeverScrollableScrollPhysics(),
       children: [
         _buildGenelTab(),
-        _buildPlaceholderTab(1),
-        _buildPlaceholderTab(2),
+        _buildAdreslerTab(),
+        _buildVergiTab(),
         _buildPlaceholderTab(3),
         _buildPlaceholderTab(4),
         _buildPlaceholderTab(5),
@@ -1389,7 +1715,82 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             _buildPremiumSectionHeader('Adres Bilgileri',
                 Icons.location_on_rounded, const Color(0xFFFF9500)),
             const SizedBox(height: 14),
-            _buildAdresAraField(),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: _buildAdresAraField(),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: _buildPremiumDropdown(
+                          label: 'Tür',
+                          hint: 'Seçiniz',
+                          icon: Icons.label_outlined,
+                          items: [
+                            'Fatura Adresi',
+                            'Sevk Adresi',
+                            'İade Adresi',
+                            'Şirket Merkez',
+                            'Şube Adresi',
+                            'Depo Adresi',
+                          ],
+                          value: _selectedAdresTuru,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedAdresTuru = value;
+                            });
+                          },
+                          accentColor: const Color(0xFFFF9500),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 18),
+                            SizedBox(
+                              height: 36,
+                              child: ElevatedButton.icon(
+                                onPressed: _adresEkle,
+                                icon: const Icon(Icons.add_location_rounded,
+                                    size: 16),
+                                label: const Text(
+                                  'Ekle',
+                                  style: TextStyle(
+                                    fontFamily: '.SF Pro Display',
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFF9500),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             // İl | İlçe | Mahalle
             Row(
@@ -1421,16 +1822,20 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 Expanded(
                   child: _buildPremiumDropdown(
                     label: 'İlçe',
-                    hint: 'İlçe seçin',
+                    hint: _selectedIl == null ? 'Önce il seçin' : 'İlçe seçin',
                     icon: Icons.location_city_outlined,
-                    items: _selectedIl == 'Konya'
-                        ? ['Meram', 'Selçuklu', 'Karatay']
-                        : ['Merkez'],
-                    value: _selectedIlce,
+                    items: _selectedIl == null
+                        ? []
+                        : (_selectedIl == 'Konya'
+                            ? ['Meram', 'Selçuklu', 'Karatay']
+                            : ['Merkez']),
+                    value: _selectedIl == null ? null : _selectedIlce,
                     onChanged: (value) {
-                      setState(() {
-                        _selectedIlce = value;
-                      });
+                      if (_selectedIl != null) {
+                        setState(() {
+                          _selectedIlce = value;
+                        });
+                      }
                     },
                     accentColor: const Color(0xFFFF9500),
                   ),
@@ -1502,11 +1907,13 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 Expanded(
                   child: _buildPremiumTextField(
                     label: 'Risk Limiti',
-                    hint: '0.00',
+                    hint: '0,00',
                     icon: Icons.account_balance_wallet_rounded,
                     controller: _riskLimitiController,
                     accentColor: const Color(0xFFAF52DE),
                     suffix: ' ₺',
+                    inputFormatters: [TurkishNumberFormatter(decimalDigits: 2)],
+                    focusNode: _riskLimitiFocusNode,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -1518,6 +1925,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     controller: _vadeSuresiController,
                     accentColor: const Color(0xFFAF52DE),
                     suffix: ' Gün',
+                    inputFormatters: [TurkishIntegerFormatter()],
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -1566,11 +1974,13 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 Expanded(
                   child: _buildPremiumTextField(
                     label: 'İskonto Oranı',
-                    hint: '0',
+                    hint: '0,00',
                     icon: Icons.percent_rounded,
                     controller: _iskontoController,
                     accentColor: const Color(0xFFAF52DE),
                     suffix: ' %',
+                    inputFormatters: [PercentageFormatter(decimalDigits: 2)],
+                    focusNode: _iskontoFocusNode,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -1590,6 +2000,822 @@ class _CustomerCardPageState extends State<CustomerCardPage>
 
             // Kaydet Butonu - Ultra Premium
             _buildUltraPremiumSaveButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVergiTab() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFFF5F7FA),
+            const Color(0xFFE8EDF4),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // KDV ve Matrah Bilgileri
+            _buildSectionTitle(
+                'KDV ve Matrah Bilgileri', Icons.calculate_outlined),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildDropdown(
+                    label: 'Varsayılan KDV Oranı',
+                    hint: 'Oran seçin',
+                    icon: Icons.percent_rounded,
+                    value: _selectedVarsayilanKDV,
+                    items: ['%0', '%1', '%8', '%10', '%20'],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedVarsayilanKDV = value;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildDropdown(
+                    label: 'İkinci KDV Oranı',
+                    hint: 'Opsiyonel',
+                    icon: Icons.percent_rounded,
+                    value: _selectedIkinciKDV,
+                    items: ['%0', '%1', '%8', '%10', '%20'],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedIkinciKDV = value;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'KDV İstisna Durumu',
+                    value: _kdvIstisnasiVar,
+                    onChanged: (value) {
+                      setState(() {
+                        _kdvIstisnasiVar = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _kdvIstisnaKoduController,
+                    label: 'İstisna Kodu',
+                    hint: 'İhracat, transit vb.',
+                    icon: Icons.code_rounded,
+                    enabled: _kdvIstisnasiVar,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Özel Matrah Uygulaması',
+                    value: _ozelMatrahUygulamasi,
+                    onChanged: (value) {
+                      setState(() {
+                        _ozelMatrahUygulamasi = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _ozelMatrahOraniController,
+                    label: 'Matrah Oranı',
+                    hint: '%',
+                    icon: Icons.percent_rounded,
+                    enabled: _ozelMatrahUygulamasi,
+                    inputFormatters: [PercentageFormatter()],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    controller: _kdvTevkifatOraniController,
+                    label: 'KDV Tevkifat Oranı',
+                    hint: '%',
+                    icon: Icons.account_balance_outlined,
+                    inputFormatters: [PercentageFormatter()],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _kdvTevkifatKoduController,
+                    label: 'KDV Tevkifat Kodu',
+                    hint: 'Kod',
+                    icon: Icons.qr_code_rounded,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+            _buildDivider(),
+            const SizedBox(height: 24),
+
+            // Stopaj ve Kesinti Bilgileri
+            _buildSectionTitle(
+                'Stopaj ve Kesinti Bilgileri', Icons.cut_outlined),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    controller: _gelirVergisiStopajOraniController,
+                    label: 'Gelir Vergisi Stopajı',
+                    hint: '%',
+                    icon: Icons.money_off_rounded,
+                    inputFormatters: [PercentageFormatter()],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Stopaj İstisnası',
+                    value: _stopajIstisnasiVar,
+                    onChanged: (value) {
+                      setState(() {
+                        _stopajIstisnasiVar = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(
+              controller: _stopajIstisnaBelgeTarihiController,
+              label: 'İstisna Belgesi Tarihi',
+              hint: 'GG.AA.YYYY',
+              icon: Icons.calendar_today_rounded,
+              enabled: _stopajIstisnasiVar,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Damga Vergisi Uygulaması',
+                    value: _damgaVergisiUygulamasi,
+                    onChanged: (value) {
+                      setState(() {
+                        _damgaVergisiUygulamasi = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'BSMV Uygulaması',
+                    value: _bsmvUygulamasi,
+                    onChanged: (value) {
+                      setState(() {
+                        _bsmvUygulamasi = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+            _buildDivider(),
+            const SizedBox(height: 24),
+
+            // e-Belge Entegrasyon Bilgileri
+            _buildSectionTitle('e-Belge Entegrasyon', Icons.cloud_outlined),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildDropdown(
+                    label: 'e-Fatura Durumu',
+                    hint: 'Seçin',
+                    icon: Icons.receipt_long_rounded,
+                    value: _selectedEFaturaDurumu,
+                    items: ['Mükellefi', 'Değil'],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedEFaturaDurumu = value;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildDropdown(
+                    label: 'e-Fatura Senaryosu',
+                    hint: 'Seçin',
+                    icon: Icons.category_outlined,
+                    value: _selectedEFaturaSenaryosu,
+                    items: ['Temel', 'Ticari', 'Kamu'],
+                    enabled: _selectedEFaturaDurumu == 'Mükellefi',
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedEFaturaSenaryosu = value;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(
+              controller: _eFaturaPostaKutusuController,
+              label: 'e-Fatura Posta Kutusu Etiketi',
+              hint: 'GİB etiketi',
+              icon: Icons.email_outlined,
+              enabled: _selectedEFaturaDurumu == 'Mükellefi',
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildDropdown(
+                    label: 'e-Arşiv Durumu',
+                    hint: 'Seçin',
+                    icon: Icons.archive_outlined,
+                    value: _selectedEArsivDurumu,
+                    items: ['Mükellefi', 'Değil'],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedEArsivDurumu = value;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildDropdown(
+                    label: 'e-İrsaliye Durumu',
+                    hint: 'Seçin',
+                    icon: Icons.local_shipping_outlined,
+                    value: _selectedEIrsaliyeDurumu,
+                    items: ['Mükellefi', 'Değil'],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedEIrsaliyeDurumu = value;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'e-Müstahsil Makbuzu',
+                    value: _eMustahsilUygulamasi,
+                    onChanged: (value) {
+                      setState(() {
+                        _eMustahsilUygulamasi = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildDropdown(
+                    label: 'e-Fatura Gönderim Şekli',
+                    hint: 'Seçin',
+                    icon: Icons.send_rounded,
+                    value: _selectedEFaturaGonderimSekli,
+                    items: ['Otomatik', 'Manuel', 'Toplu'],
+                    enabled: _selectedEFaturaDurumu == 'Mükellefi',
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedEFaturaGonderimSekli = value;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+            _buildDivider(),
+            const SizedBox(height: 24),
+
+            // Özel Durum ve Muafiyetler
+            _buildSectionTitle(
+                'Özel Durum ve Muafiyetler', Icons.workspace_premium_outlined),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Engelli İndirimi',
+                    value: _engelliIndirimiVar,
+                    onChanged: (value) {
+                      setState(() {
+                        _engelliIndirimiVar = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _engelliIndirimiOraniController,
+                    label: 'İndirim Oranı',
+                    hint: '%',
+                    icon: Icons.percent_rounded,
+                    enabled: _engelliIndirimiVar,
+                    inputFormatters: [PercentageFormatter()],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Ar-Ge İndirimi',
+                    value: _argeIndirimiVar,
+                    onChanged: (value) {
+                      setState(() {
+                        _argeIndirimiVar = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _argeIndirimiBelgeNoController,
+                    label: 'Belge No',
+                    hint: 'Belge numarası',
+                    icon: Icons.badge_outlined,
+                    enabled: _argeIndirimiVar,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Yatırım Teşvik Belgesi',
+                    value: _yatirimTesvik,
+                    onChanged: (value) {
+                      setState(() {
+                        _yatirimTesvik = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _yatirimTesvikBelgeNoController,
+                    label: 'Belge No',
+                    hint: 'Belge numarası',
+                    icon: Icons.badge_outlined,
+                    enabled: _yatirimTesvik,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(
+              controller: _yatirimTesvikGecerlilikController,
+              label: 'Geçerlilik Tarihi',
+              hint: 'GG.AA.YYYY',
+              icon: Icons.calendar_today_rounded,
+              enabled: _yatirimTesvik,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Teknoloji Geliştirme Bölgesi',
+                    value: _teknolojiGelistirmeBolgesi,
+                    onChanged: (value) {
+                      setState(() {
+                        _teknolojiGelistirmeBolgesi = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Serbest Bölge',
+                    value: _serbestBolge,
+                    onChanged: (value) {
+                      setState(() {
+                        _serbestBolge = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Organize Sanayi Bölgesi',
+                    value: _osb,
+                    onChanged: (value) {
+                      setState(() {
+                        _osb = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Gümrük Müşavirliği',
+                    value: _gumrukMusavirligi,
+                    onChanged: (value) {
+                      setState(() {
+                        _gumrukMusavirligi = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(
+              controller: _gumrukMusavirlikBelgeNoController,
+              label: 'Gümrük Müşavirliği Belge No',
+              hint: 'Belge numarası',
+              icon: Icons.badge_outlined,
+              enabled: _gumrukMusavirligi,
+            ),
+
+            const SizedBox(height: 24),
+            _buildDivider(),
+            const SizedBox(height: 24),
+
+            // Ödeme ve Vergi Dönemleri
+            _buildSectionTitle(
+                'Ödeme ve Vergi Dönemleri', Icons.event_repeat_outlined),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildDropdown(
+                    label: 'KDV Beyan Dönemi',
+                    hint: 'Seçin',
+                    icon: Icons.calendar_view_month_rounded,
+                    value: _selectedKDVBeyanDonemi,
+                    items: ['Aylık', '3 Aylık'],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedKDVBeyanDonemi = value;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Geçici Vergi Mükellefi',
+                    value: _geciciVergiMukellefi,
+                    onChanged: (value) {
+                      setState(() {
+                        _geciciVergiMukellefi = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildCheckboxField(
+              label: 'Muhtasar Beyanname Verilecek',
+              value: _muhtasarBeyanname,
+              onChanged: (value) {
+                setState(() {
+                  _muhtasarBeyanname = value ?? false;
+                });
+              },
+            ),
+
+            const SizedBox(height: 24),
+            _buildDivider(),
+            const SizedBox(height: 24),
+
+            // Fatura Notları ve Uyarılar
+            _buildSectionTitle(
+                'Fatura Notları ve Uyarılar', Icons.note_alt_outlined),
+            const SizedBox(height: 14),
+            _buildTextField(
+              controller: _faturaOzelNotController,
+              label: 'Faturada Yazılacak Özel Not',
+              hint: 'Tevkifat, istisna açıklamaları vb.',
+              icon: Icons.sticky_note_2_outlined,
+              maxLines: 3,
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(
+              controller: _muhasebeNotlariController,
+              label: 'Muhasebe Notları',
+              hint: 'İç kullanım için notlar',
+              icon: Icons.notes_rounded,
+              maxLines: 3,
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(
+              controller: _vergiDairesiOzelAnlasmalarController,
+              label: 'Vergi Dairesi ile Özel Anlaşmalar',
+              hint: 'Varsa özel durumlar',
+              icon: Icons.handshake_outlined,
+              maxLines: 2,
+            ),
+
+            const SizedBox(height: 24),
+            _buildDivider(),
+            const SizedBox(height: 24),
+
+            // Vergi İadesi ve Mahsup
+            _buildSectionTitle(
+                'Vergi İadesi ve Mahsup', Icons.currency_exchange_outlined),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'İade Talep Durumu',
+                    value: _iadeTalepDurumu,
+                    onChanged: (value) {
+                      setState(() {
+                        _iadeTalepDurumu = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildDropdown(
+                    label: 'İade Yöntemi',
+                    hint: 'Seçin',
+                    icon: Icons.payment_rounded,
+                    value: _selectedIadeYontemi,
+                    items: ['Nakit', 'Mahsup'],
+                    enabled: _iadeTalepDurumu,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedIadeYontemi = value;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(
+              controller: _mahsubenIadeIBANController,
+              label: 'Mahsuben İade IBAN',
+              hint: 'TR00 0000 0000 0000 0000 0000 00',
+              icon: Icons.account_balance_rounded,
+              enabled: _iadeTalepDurumu,
+            ),
+            const SizedBox(height: 12),
+            _buildDropdown(
+              label: 'Vergi İadesi Sıklığı',
+              hint: 'Seçin',
+              icon: Icons.repeat_rounded,
+              value: _selectedVergiIadesiSikligi,
+              items: ['Aylık', 'Dönemsel'],
+              enabled: _iadeTalepDurumu,
+              onChanged: (value) {
+                setState(() {
+                  _selectedVergiIadesiSikligi = value;
+                });
+              },
+            ),
+
+            const SizedBox(height: 24),
+            _buildDivider(),
+            const SizedBox(height: 24),
+
+            // Diğer Vergiler
+            _buildSectionTitle('Diğer Vergiler', Icons.receipt_outlined),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'ÖTV Mükellefi',
+                    value: _otvMukellefi,
+                    onChanged: (value) {
+                      setState(() {
+                        _otvMukellefi = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _otvOraniController,
+                    label: 'ÖTV Oranı',
+                    hint: '%',
+                    icon: Icons.percent_rounded,
+                    enabled: _otvMukellefi,
+                    inputFormatters: [PercentageFormatter()],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+            _buildDivider(),
+            const SizedBox(height: 24),
+
+            // Denetim ve Uyumluluk
+            _buildSectionTitle('Denetim ve Uyumluluk', Icons.security_outlined),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    controller: _sonVergiIncelemeTarihiController,
+                    label: 'Son Vergi İncelemesi',
+                    hint: 'GG.AA.YYYY',
+                    icon: Icons.calendar_today_rounded,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _sonVergiIncelemeSonucuController,
+                    label: 'İnceleme Sonucu',
+                    hint: 'Sonuç',
+                    icon: Icons.assignment_turned_in_outlined,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Vergi Borcu Var',
+                    value: _vergiBorcuVar,
+                    onChanged: (value) {
+                      setState(() {
+                        _vergiBorcuVar = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _vergiBorcuTutariController,
+                    label: 'Borç Tutarı',
+                    hint: '0,00',
+                    icon: Icons.attach_money_rounded,
+                    enabled: _vergiBorcuVar,
+                    inputFormatters: [TurkishNumberFormatter()],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(
+              controller: _vergiBorcuTaksitController,
+              label: 'Taksit Bilgisi',
+              hint: 'Taksit sayısı ve detayları',
+              icon: Icons.info_outline_rounded,
+              enabled: _vergiBorcuVar,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Uzlaşma Süreci Devam Ediyor',
+                    value: _uzlasmaSureci,
+                    onChanged: (value) {
+                      setState(() {
+                        _uzlasmaSureci = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Özelge Durumu',
+                    value: _ozelgeDurumu,
+                    onChanged: (value) {
+                      setState(() {
+                        _ozelgeDurumu = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(
+              controller: _ozelgeNoController,
+              label: 'Özelge No',
+              hint: 'Özelge numarası',
+              icon: Icons.confirmation_number_outlined,
+              enabled: _ozelgeDurumu,
+            ),
+
+            const SizedBox(height: 24),
+            _buildDivider(),
+            const SizedBox(height: 24),
+
+            // Raporlama Tercihleri
+            _buildSectionTitle(
+                'Raporlama Tercihleri', Icons.analytics_outlined),
+            const SizedBox(height: 14),
+            _buildDropdown(
+              label: 'KDV Beyanname Detay Seviyesi',
+              hint: 'Seçin',
+              icon: Icons.list_alt_rounded,
+              value: _selectedKDVBeyannameDetay,
+              items: ['Özet', 'Detaylı'],
+              onChanged: (value) {
+                setState(() {
+                  _selectedKDVBeyannameDetay = value;
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'BA/BS Formu Gerekli',
+                    value: _baFormGerekli,
+                    onChanged: (value) {
+                      setState(() {
+                        _baFormGerekli = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildCheckboxField(
+                    label: 'Form AA/AB Gerekli',
+                    value: _formAAGerekli,
+                    onChanged: (value) {
+                      setState(() {
+                        _formAAGerekli = value ?? false;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -1900,6 +3126,8 @@ class _CustomerCardPageState extends State<CustomerCardPage>
     bool isRequired = false,
     bool enabled = true,
     TextEditingController? controller,
+    List<TextInputFormatter>? inputFormatters,
+    int? maxLines = 1,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1965,6 +3193,8 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 child: TextField(
                   enabled: enabled,
                   controller: controller,
+                  inputFormatters: inputFormatters,
+                  maxLines: maxLines,
                   decoration: InputDecoration(
                     hintText: hint,
                     hintStyle: TextStyle(
@@ -2010,6 +3240,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
     required String? value,
     required ValueChanged<String?> onChanged,
     bool isRequired = false,
+    bool enabled = true,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2093,7 +3324,9 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                             size: 16,
                             color: isFocused
                                 ? const Color(0xFF5AC8FA)
-                                : const Color(0xFF8E8E93),
+                                : (enabled
+                                    ? const Color(0xFF8E8E93)
+                                    : const Color(0xFFC7C7CC)),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -2114,53 +3347,55 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     ),
                     isExpanded: true,
                     isDense: true,
-                    items: items.map((String item) {
-                      return DropdownMenuItem<String>(
-                        value: item,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeInOut,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(4),
+                    items: enabled
+                        ? items.map((String item) {
+                            return DropdownMenuItem<String>(
+                              value: item,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeInOut,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
-                                  color:
-                                      const Color(0xFF5AC8FA).withOpacity(0.08),
-                                  borderRadius: BorderRadius.circular(6),
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Icon(
-                                  icon,
-                                  size: 14,
-                                  color: const Color(0xFF5AC8FA),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF5AC8FA)
+                                            .withOpacity(0.08),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Icon(
+                                        icon,
+                                        size: 14,
+                                        color: const Color(0xFF5AC8FA),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        item,
+                                        style: const TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFF1C1C1E),
+                                          letterSpacing: -0.1,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  item,
-                                  style: const TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF1C1C1E),
-                                    letterSpacing: -0.1,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: onChanged,
+                            );
+                          }).toList()
+                        : null,
+                    onChanged: enabled ? onChanged : null,
                     style: const TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w500,
@@ -2173,6 +3408,74 @@ class _CustomerCardPageState extends State<CustomerCardPage>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCheckboxField({
+    required String label,
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+  }) {
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color(0xFFE5E5EA),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.01),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Transform.scale(
+            scale: 0.85,
+            child: Checkbox(
+              value: value,
+              onChanged: onChanged,
+              activeColor: const Color(0xFF34C759),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1C1C1E),
+                letterSpacing: -0.1,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      height: 1,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFE5E5EA).withOpacity(0.0),
+            const Color(0xFFE5E5EA),
+            const Color(0xFFE5E5EA).withOpacity(0.0),
+          ],
+        ),
+      ),
     );
   }
 
@@ -2942,12 +4245,19 @@ class _CustomerCardPageState extends State<CustomerCardPage>
   Widget _buildPremiumSectionHeader(String title, IconData icon, Color color) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: const Color(0xFF1C1C1E),
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: color,
+          ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 10),
         Text(
           title,
           style: const TextStyle(
@@ -2971,6 +4281,8 @@ class _CustomerCardPageState extends State<CustomerCardPage>
     String? suffix,
     int maxLines = 1,
     void Function(String, TextEditingController)? onChanged,
+    List<TextInputFormatter>? inputFormatters,
+    FocusNode? focusNode,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3023,7 +4335,9 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     Expanded(
                       child: TextField(
                         controller: controller,
+                        focusNode: focusNode,
                         maxLines: maxLines,
+                        inputFormatters: inputFormatters,
                         onChanged: onChanged != null
                             ? (value) => onChanged(value, controller)
                             : null,
@@ -3145,7 +4459,9 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
-                    value: value,
+                    value: items.isEmpty
+                        ? null
+                        : (items.contains(value) ? value : null),
                     hint: Row(
                       children: [
                         AnimatedContainer(
@@ -3184,31 +4500,33 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     ),
                     isExpanded: true,
                     isDense: true,
-                    items: items.map((String item) {
-                      return DropdownMenuItem<String>(
-                        value: item,
-                        child: Row(
-                          children: [
-                            Icon(
-                              icon,
-                              size: 16,
-                              color: const Color(0xFF8E8E93),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              item,
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF1C1C1E),
-                                letterSpacing: -0.2,
+                    items: items.isEmpty
+                        ? null
+                        : items.map((String item) {
+                            return DropdownMenuItem<String>(
+                              value: item,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    icon,
+                                    size: 16,
+                                    color: const Color(0xFF8E8E93),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    item,
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF1C1C1E),
+                                      letterSpacing: -0.2,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: onChanged,
+                            );
+                          }).toList(),
+                    onChanged: items.isEmpty ? null : onChanged,
                     dropdownColor: Colors.white,
                     elevation: 3,
                     borderRadius: BorderRadius.circular(10),
@@ -3224,74 +4542,575 @@ class _CustomerCardPageState extends State<CustomerCardPage>
 
   // Ultra Premium Save Button
   Widget _buildUltraPremiumSaveButton() {
-    return Container(
-      alignment: Alignment.centerRight,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: _saveCustomer,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 32,
-              vertical: 14,
-            ),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF007AFF),
-                  Color(0xFF0051D5),
-                ],
-                stops: [0.0, 1.0],
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        // Kaydet Butonu
+        SizedBox(
+          height: 32,
+          child: ElevatedButton.icon(
+            onPressed: _saveCustomer,
+            icon: const Icon(Icons.check_rounded, size: 13),
+            label: const Text(
+              'Kaydet',
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
               ),
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF007AFF).withOpacity(0.4),
-                  blurRadius: 20,
-                  spreadRadius: 0,
-                  offset: const Offset(0, 8),
-                ),
-                BoxShadow(
-                  color: const Color(0xFF007AFF).withOpacity(0.2),
-                  blurRadius: 40,
-                  spreadRadius: -10,
-                  offset: const Offset(0, 20),
-                ),
-              ],
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.save_rounded,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'Kaydet',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ],
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF007AFF),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
             ),
           ),
         ),
+        const SizedBox(width: 8),
+        // Temizle Butonu
+        SizedBox(
+          height: 32,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              setState(() {
+                // Tüm alanları temizle
+                _unvanController.clear();
+                _unvan2Controller.clear();
+                _kisaAdController.clear();
+                _vergiNoController.clear();
+                _tcKimlikNoController.clear();
+                _vergiDairesiController.clear();
+                _vergiKoduController.clear();
+                _adController.clear();
+                _soyadController.clear();
+                _telefonController.clear();
+                _cepTelefonuController.clear();
+                _cepTelefonu2Controller.clear();
+                _epostaController.clear();
+                _webSitesiController.clear();
+                _whatsappController.clear();
+                _mahalleController.clear();
+                _caddeController.clear();
+                _sokakController.clear();
+                _postaKoduController.clear();
+                _adresController.clear();
+                _riskLimitiController.clear();
+                _vadeSuresiController.clear();
+                _iskontoController.clear();
+                _yetkiliKisiController.clear();
+                _selectedAccountType = null;
+                _selectedAccountCategory = null;
+                _selectedGroup = null;
+                _selectedBranch = null;
+                _selectedIl = null;
+                _selectedIlce = null;
+                _selectedAdresTuru = 'Fatura Adresi';
+                _selectedOdemeSekli = null;
+                _selectedParaBirimi = null;
+                _hasUnsavedChanges = false;
+              });
+            },
+            icon: const Icon(Icons.cleaning_services_rounded, size: 13),
+            label: const Text(
+              'Temizle',
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFCC00),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        // Vazgeç Butonu
+        SizedBox(
+          height: 32,
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              if (_hasFormData() && _hasUnsavedChanges) {
+                final shouldExit = await _showExitConfirmation();
+                if (shouldExit) {
+                  widget.onClose();
+                }
+              } else {
+                widget.onClose();
+              }
+            },
+            icon: const Icon(Icons.close_rounded, size: 13),
+            label: const Text(
+              'Vazgeç',
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF3B30),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Adresler Sekmesi
+  Widget _buildAdreslerTab() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: _kayitliAdresler.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF34C759).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Icon(
+                      Icons.location_off_outlined,
+                      size: 40,
+                      color: Color(0xFF34C759),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Henüz Adres Eklenmemiş',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1C1C1E),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Genel sekmesinden adres ekleyebilirsiniz',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF8E8E93),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : GridView.builder(
+              padding: const EdgeInsets.all(20),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 1.3,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: _kayitliAdresler.length,
+              itemBuilder: (context, index) {
+                final adres = _kayitliAdresler[index];
+                final cardColors = [
+                  [const Color(0xFF007AFF), const Color(0xFF5AC8FA)],
+                  [const Color(0xFF34C759), const Color(0xFF30D158)],
+                  [const Color(0xFFFF9500), const Color(0xFFFFCC00)],
+                  [const Color(0xFFAF52DE), const Color(0xFFBF5AF2)],
+                  [const Color(0xFFFF3B30), const Color(0xFFFF6961)],
+                ];
+                final colorPair = cardColors[index % cardColors.length];
+
+                return Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [colorPair[0], colorPair[1]],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: colorPair[0].withOpacity(0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Stack(
+                      children: [
+                        // Pattern arka plan
+                        Positioned.fill(
+                          child: Opacity(
+                            opacity: 0.1,
+                            child: Image.asset(
+                              'assets/card_pattern.png',
+                              repeat: ImageRepeat.repeat,
+                              errorBuilder: (_, __, ___) => Container(),
+                            ),
+                          ),
+                        ),
+                        // İçerik
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Üst - İkon ve Tür
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.25),
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: const Icon(
+                                      Icons.location_on,
+                                      size: 28,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.25),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      adres['tur'] ?? '',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Spacer(),
+                              // Orta - Tam Adres
+                              if (adres['tamAdres']?.isNotEmpty == true)
+                                Text(
+                                  adres['tamAdres']!,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    height: 1.3,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black26,
+                                        offset: Offset(0, 1),
+                                        blurRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              const SizedBox(height: 12),
+                              // Alt - Detaylar ve Butonlar
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          if (adres['il']?.isNotEmpty == true)
+                                            _buildWalletInfo(
+                                              Icons.location_city,
+                                              '${adres['il']} / ${adres['ilce'] ?? ''}',
+                                            ),
+                                          if (adres['postaKodu']?.isNotEmpty ==
+                                              true)
+                                            _buildWalletInfo(
+                                              Icons.mail_outline,
+                                              adres['postaKodu']!,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.edit_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      onPressed: () {},
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+                                            title: Row(
+                                              children: [
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.all(8),
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        const Color(0xFFFF3B30)
+                                                            .withOpacity(0.1),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.warning_rounded,
+                                                    color: Color(0xFFFF3B30),
+                                                    size: 24,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 12),
+                                                const Text(
+                                                  'Adresi Sil',
+                                                  style: TextStyle(
+                                                    fontFamily:
+                                                        '.SF Pro Display',
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            content: const Text(
+                                              'Bu adresi silmek istediğinizden emin misiniz?',
+                                              style: TextStyle(
+                                                fontFamily: '.SF Pro Display',
+                                                fontSize: 14,
+                                                color: Color(0xFF8E8E93),
+                                              ),
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.pop(context),
+                                                child: const Text(
+                                                  'İptal',
+                                                  style: TextStyle(
+                                                    fontFamily:
+                                                        '.SF Pro Display',
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Color(0xFF007AFF),
+                                                  ),
+                                                ),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                  setState(() {
+                                                    _kayitliAdresler
+                                                        .removeAt(index);
+                                                  });
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    SnackBar(
+                                                      content: const Row(
+                                                        children: [
+                                                          Icon(
+                                                              Icons
+                                                                  .check_circle,
+                                                              color:
+                                                                  Colors.white,
+                                                              size: 20),
+                                                          SizedBox(width: 12),
+                                                          Text(
+                                                            '✓ Adres silindi',
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  '.SF Pro Display',
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      backgroundColor:
+                                                          const Color(
+                                                              0xFFFF3B30),
+                                                      behavior: SnackBarBehavior
+                                                          .floating,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                      duration: const Duration(
+                                                          seconds: 2),
+                                                    ),
+                                                  );
+                                                },
+                                                child: const Text(
+                                                  'Sil',
+                                                  style: TextStyle(
+                                                    fontFamily:
+                                                        '.SF Pro Display',
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Color(0xFFFF3B30),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+
+  Widget _buildAdresDetayRow(IconData icon, String label, String value) {
+    final iconColors = {
+      Icons.location_city_rounded: const Color(0xFF007AFF),
+      Icons.home_work_rounded: const Color(0xFF34C759),
+      Icons.signpost_rounded: const Color(0xFFFF9500),
+      Icons.route_rounded: const Color(0xFFAF52DE),
+      Icons.mail_outline_rounded: const Color(0xFFFF3B30),
+      Icons.notes_rounded: const Color(0xFF5AC8FA),
+    };
+    final iconColor = iconColors[icon] ?? const Color(0xFF8E8E93);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              size: 13,
+              color: iconColor,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF1C1C1E),
+                  fontFamily: '.SF Pro Display',
+                  letterSpacing: -0.1,
+                  height: 1.5,
+                ),
+                children: [
+                  TextSpan(
+                    text: '$label: ',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF8E8E93),
+                    ),
+                  ),
+                  TextSpan(
+                    text: value,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1C1C1E),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWalletInfo(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 12, color: Colors.white70),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -3366,13 +5185,6 @@ class _AnimatedNotificationCardState extends State<_AnimatedNotificationCard>
         _controller.reverse().then((_) => widget.onDismiss());
       }
     });
-  }
-
-  // Adresler Sekmesi
-  Widget _buildAdreslerTab() {
-    return Center(
-      child: Text('Adresler sekmesi - Geliştirme aşamasında'),
-    );
   }
 
   @override
