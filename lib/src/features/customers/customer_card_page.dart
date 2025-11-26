@@ -1,7 +1,11 @@
 ﻿import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 import '../../core/utils/number_formatters.dart';
+import 'models/customer_model.dart';
+import 'providers/customer_provider.dart';
 
 class CustomerCardPage extends StatefulWidget {
   final VoidCallback onClose;
@@ -211,6 +215,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
 
   // Form değişiklik takibi
   bool _hasUnsavedChanges = false;
+  bool _isSaving = false;
 
   // Adres Yönetim Sistemi
   String? _selectedAdresTuru = 'Fatura Adresi';
@@ -629,39 +634,6 @@ class _CustomerCardPageState extends State<CustomerCardPage>
     );
   }
 
-  void _saveCustomer() {
-    if (!_validateForm()) {
-      return;
-    }
-
-    // Kalıcı hesap kodu üret ve kayıtlı kodlara ekle
-    final finalCode = _generateFinalAccountCode(_selectedAccountType!);
-    _usedAccountCodes.add(finalCode);
-
-    // Başarı mesajı göster
-    _showSuccessMessage('Müşteri başarıyla kaydedildi: $finalCode');
-
-    // Yeni kayıt için formu temizle ve yeni geçici kod ata
-    setState(() {
-      _hasUnsavedChanges = false; // Kayıt yapıldı, değişiklikler temizlendi
-
-      // Mevcut hesap tipine göre yeni geçici kod üret
-      if (_selectedAccountType != null) {
-        _tempAccountCode = _generateTempAccountCode(_selectedAccountType!);
-        _accountCodeController.text = _tempAccountCode;
-      }
-
-      // Diğer alanları temizle
-      _unvanController.clear();
-      _kisaAdController.clear();
-      _selectedAccountCategory = null;
-      _selectedGroup = null;
-      _selectedBranch = null;
-      _isActive = true;
-      _isPotential = false;
-    });
-  }
-
   // Çıkış uyarısı göster
   Future<bool> _showExitConfirmation() async {
     final result = await showDialog<bool>(
@@ -776,6 +748,136 @@ class _CustomerCardPageState extends State<CustomerCardPage>
         .addListener(() => setState(() => _hasUnsavedChanges = true));
     _epostaController
         .addListener(() => setState(() => _hasUnsavedChanges = true));
+  }
+
+  // Müşteri kaydetme
+  Future<void> _saveCustomer() async {
+    // Validation
+    if (_unvanController.text.trim().isEmpty) {
+      _showErrorSnackbar('Ünvan alanı zorunludur');
+      return;
+    }
+
+    if (_accountCodeController.text.trim().isEmpty) {
+      _showErrorSnackbar('Hesap kodu alanı zorunludur');
+      return;
+    }
+
+    if (_selectedAccountType == null) {
+      _showErrorSnackbar('Hesap tipi seçimi zorunludur');
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final provider = Provider.of<CustomerProvider>(context, listen: false);
+
+      // Customer nesnesi oluştur
+      final customer = Customer(
+        id: widget.customerId ?? const Uuid().v4(),
+        code: _accountCodeController.text.trim(),
+        accountGroup: _selectedAccountType!,
+        customerType: _selectedAccountCategory,
+        branch: _selectedBranch,
+        customerGroup: _selectedGroup,
+        name: _unvanController.text.trim(),
+        companyCode: _kisaAdController.text.trim(),
+        taxOfficeName: _vergiDairesiController.text.trim(),
+        taxNumber: _vergiNoController.text.trim(),
+        phone: _telefonController.text.trim(),
+        mobile: _cepTelefonuController.text.trim(),
+        email: _epostaController.text.trim(),
+        website: _webSitesiController.text.trim(),
+        whatsapp: _whatsappController.text.trim(),
+        city: _selectedIl,
+        district: _selectedIlce,
+        address: _adresController.text.trim(),
+        neighborhood: _mahalleController.text.trim(),
+        street: _sokakController.text.trim(),
+        avenue: _caddeController.text.trim(),
+        postalCode: _postaKoduController.text.trim(),
+        openAddress: _adresDetayController.text.trim(),
+        creditLimit:
+            NumberParser.parseTurkish(_riskLimitiController.text) ?? 0.0,
+        paymentTerms: _vadeSuresiController.text.trim(),
+        paymentMethod: _selectedOdemeSekli,
+        currency: _selectedParaBirimi ?? 'TRY',
+        status: _isActive ? 'Aktif' : 'Pasif',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        needsSync: false,
+      );
+
+      // Provider aracılığıyla kaydet
+      bool success;
+      if (widget.customerId != null) {
+        success = await provider.updateCustomer(customer);
+      } else {
+        success = await provider.addCustomer(customer);
+      }
+
+      if (success) {
+        setState(() {
+          _isSaving = false;
+          _hasUnsavedChanges = false;
+        });
+        _showSuccessSnackbar(
+          widget.customerId != null
+              ? 'Müşteri başarıyla güncellendi'
+              : 'Müşteri başarıyla kaydedildi',
+        );
+
+        // 1.5 saniye sonra kapat
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          if (mounted) {
+            widget.onClose();
+          }
+        });
+      } else {
+        setState(() => _isSaving = false);
+        _showErrorSnackbar('Kayıt sırasında bir hata oluştu');
+      }
+    } catch (e) {
+      setState(() => _isSaving = false);
+      _showErrorSnackbar('Hata: ${e.toString()}');
+    }
+  }
+
+  void _showSuccessSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 12),
+            Text(message),
+          ],
+        ),
+        backgroundColor: const Color(0xFF34C759),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error, color: Colors.white),
+            const SizedBox(width: 12),
+            Text(message),
+          ],
+        ),
+        backgroundColor: const Color(0xFFFF3B30),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
   }
 
   @override
@@ -4549,11 +4651,20 @@ class _CustomerCardPageState extends State<CustomerCardPage>
         SizedBox(
           height: 32,
           child: ElevatedButton.icon(
-            onPressed: _saveCustomer,
-            icon: const Icon(Icons.check_rounded, size: 13),
-            label: const Text(
-              'Kaydet',
-              style: TextStyle(
+            onPressed: _isSaving ? null : _saveCustomer,
+            icon: _isSaving
+                ? const SizedBox(
+                    width: 13,
+                    height: 13,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                    ),
+                  )
+                : const Icon(Icons.check_rounded, size: 13),
+            label: Text(
+              _isSaving ? 'Kaydediliyor...' : 'Kaydet',
+              style: const TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w600,
                 letterSpacing: -0.2,
