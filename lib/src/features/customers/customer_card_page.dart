@@ -965,7 +965,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
       children: [
         const SizedBox(height: 18),
         Container(
-          height: 36,
+          height: 44,
           child: ElevatedButton.icon(
             onPressed: _adresEkle,
             icon: const Icon(Icons.add_location_rounded, size: 16),
@@ -1210,33 +1210,16 @@ class _CustomerCardPageState extends State<CustomerCardPage>
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(24),
-      constraints: const BoxConstraints(maxWidth: 1200),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 40,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      color: Colors.white,
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
           _buildUltraPremiumTabBar(),
           const Divider(height: 1, thickness: 0.5, color: Color(0xFFE5E5EA)),
-          Container(
-            height: 500,
-            padding: const EdgeInsets.all(32),
-            child: _buildTabContent(),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              child: _buildTabContent(),
+            ),
           ),
         ],
       ),
@@ -1290,19 +1273,22 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     const Text(
                       'Müşteri Kartı',
                       style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
+                        fontFamily: '.SF Pro Display',
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
                         color: Color(0xFF1C1C1E),
-                        letterSpacing: -0.5,
+                        letterSpacing: -0.6,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       widget.customerId ?? 'Yeni Kayıt',
                       style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
+                        fontFamily: '.SF Pro Display',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                         color: Color(0xFF8E8E93),
+                        letterSpacing: -0.2,
                       ),
                     ),
                   ],
@@ -1311,7 +1297,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               _buildActionButton(Icons.close_rounded, widget.onClose),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           // Cam efektli (glassmorphism) sekme tasarımı
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
@@ -1335,18 +1321,18 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
                     ),
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(8),
                 child: Row(
                   children: List.generate(_tabs.length, (index) {
                     return Expanded(
@@ -1385,33 +1371,33 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   ],
                 )
               : null,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           border: isActive
               ? Border.all(
-                  color: tab.activeColor.withOpacity(0.15),
+                  color: tab.activeColor.withOpacity(0.2),
                   width: 1.5,
                 )
               : null,
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: tab.activeColor.withOpacity(0.12),
-                    blurRadius: 16,
+                    color: tab.activeColor.withOpacity(0.15),
+                    blurRadius: 20,
                     spreadRadius: 0,
-                    offset: const Offset(0, 4),
+                    offset: const Offset(0, 6),
                   ),
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 6,
-                    offset: const Offset(0, 1),
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ]
               : null,
         ),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 3),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1420,33 +1406,34 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               AnimatedContainer(
                 duration: const Duration(milliseconds: 350),
                 curve: Curves.easeInOutCubic,
-                padding: EdgeInsets.all(isActive ? 6 : 4),
+                padding: EdgeInsets.all(isActive ? 5 : 4),
                 decoration: BoxDecoration(
                   color: isActive
-                      ? tab.activeColor.withOpacity(0.08)
+                      ? tab.activeColor.withOpacity(0.1)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   tab.icon,
-                  size: isActive ? 18 : 17,
+                  size: isActive ? 16 : 15,
                   color: isActive ? tab.activeColor : const Color(0xFF8B92A0),
                 ),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: 2),
               Flexible(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 1),
                   child: AnimatedDefaultTextStyle(
                     duration: const Duration(milliseconds: 350),
                     curve: Curves.easeInOutCubic,
                     style: TextStyle(
+                      fontFamily: '.SF Pro Display',
                       fontSize: isActive ? 9.5 : 9,
                       fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                       color:
                           isActive ? tab.activeColor : const Color(0xFF8B92A0),
-                      letterSpacing: isActive ? 0.05 : 0,
-                      height: 1.1,
+                      letterSpacing: isActive ? -0.1 : 0,
+                      height: 1.0,
                     ),
                     child: Text(
                       tab.label,
@@ -1469,17 +1456,29 @@ class _CustomerCardPageState extends State<CustomerCardPage>
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          width: 40,
-          height: 40,
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
             color: const Color(0xFFF2F2F7),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFE5E5EA),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Icon(
             icon,
-            size: 20,
+            size: 22,
             color: const Color(0xFF8E8E93),
           ),
         ),
@@ -1525,7 +1524,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
         ],
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1561,7 +1560,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 18),
             // 1. SATIR: Hesap Kodu + Hesap Tipi + Hesap Türü
             Row(
               children: [
@@ -1569,7 +1568,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   flex: 2,
                   child: _buildEditableAccountCode(),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   flex: 2,
                   child: _buildDropdown(
@@ -1858,16 +1857,16 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                           children: [
                             const SizedBox(height: 18),
                             SizedBox(
-                              height: 36,
+                              height: 44,
                               child: ElevatedButton.icon(
                                 onPressed: _adresEkle,
                                 icon: const Icon(Icons.add_location_rounded,
-                                    size: 16),
+                                    size: 18),
                                 label: const Text(
                                   'Ekle',
                                   style: TextStyle(
                                     fontFamily: '.SF Pro Display',
-                                    fontSize: 12.5,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                     letterSpacing: -0.2,
                                   ),
@@ -1878,10 +1877,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                                   elevation: 0,
                                   shadowColor: Colors.transparent,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
+                                      horizontal: 14, vertical: 10),
                                 ),
                               ),
                             ),
@@ -3035,10 +3034,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                height: 36,
+                height: 44,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isFocused
                         ? const Color(0xFF5AC8FA)
@@ -3063,6 +3062,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 ),
                 child: TextField(
                   controller: _accountCodeController,
+                  textAlignVertical: TextAlignVertical.center,
                   onChanged: (value) {
                     if (_checkAccountCodeExists(value)) {
                       // Kod daha önce kullanılmış - boşta olan ilk kodu bul
@@ -3083,26 +3083,26 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   decoration: InputDecoration(
                     hintText: 'Hesap kodu girin',
                     hintStyle: TextStyle(
-                      fontSize: 12.5,
+                      fontSize: 14,
                       color: const Color(0xFF8E8E93).withOpacity(0.7),
                       fontWeight: FontWeight.w400,
                     ),
                     prefixIcon: Icon(
                       Icons.numbers_rounded,
-                      size: 16,
+                      size: 18,
                       color: isFocused
                           ? const Color(0xFF5AC8FA)
                           : const Color(0xFF8E8E93),
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                      horizontal: 14,
+                      vertical: 12,
                     ),
                     isDense: true,
                   ),
                   style: const TextStyle(
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF1C1C1E),
                   ),
@@ -3123,7 +3123,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
     required ValueChanged<bool> onChanged,
   }) {
     return SizedBox(
-      height: 36,
+      height: 44,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
@@ -3135,8 +3135,8 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             builder: (context, animValue, child) {
               return Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 7,
+                  horizontal: 14,
+                  vertical: 10,
                 ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -3258,7 +3258,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             ],
           ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Focus(
           child: Builder(
             builder: (context) {
@@ -3266,10 +3266,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                height: 36,
+                height: 44,
                 decoration: BoxDecoration(
                   color: enabled ? Colors.white : const Color(0xFFF8F9FA),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isFocused
                         ? const Color(0xFF5AC8FA)
@@ -3297,16 +3297,18 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   controller: controller,
                   inputFormatters: inputFormatters,
                   maxLines: maxLines,
+                  textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
                     hintText: hint,
                     hintStyle: TextStyle(
-                      fontSize: 12.5,
-                      color: const Color(0xFF8E8E93).withOpacity(0.7),
+                      fontSize: 14,
+                      color: const Color(0xFF8E8E93).withOpacity(0.6),
                       fontWeight: FontWeight.w400,
+                      letterSpacing: -0.2,
                     ),
                     prefixIcon: Icon(
                       icon,
-                      size: 16,
+                      size: 18,
                       color: isFocused
                           ? const Color(0xFF5AC8FA)
                           : (enabled
@@ -3315,15 +3317,16 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                      horizontal: 14,
+                      vertical: 12,
                     ),
                     isDense: true,
                   ),
                   style: const TextStyle(
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF1C1C1E),
+                    letterSpacing: -0.2,
                   ),
                 ),
               );
@@ -3379,11 +3382,12 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                height: 44,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isFocused
                         ? const Color(0xFF5AC8FA)
@@ -3423,7 +3427,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                           ),
                           child: Icon(
                             icon,
-                            size: 16,
+                            size: 18,
                             color: isFocused
                                 ? const Color(0xFF5AC8FA)
                                 : (enabled
@@ -3435,9 +3439,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                         Text(
                           hint,
                           style: TextStyle(
-                            fontSize: 12.5,
-                            color: const Color(0xFF8E8E93).withOpacity(0.7),
+                            fontSize: 14,
+                            color: const Color(0xFF8E8E93).withOpacity(0.6),
                             fontWeight: FontWeight.w400,
+                            letterSpacing: -0.2,
                           ),
                         ),
                       ],
@@ -3484,7 +3489,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                                       child: Text(
                                         item,
                                         style: const TextStyle(
-                                          fontSize: 12.5,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w500,
                                           color: Color(0xFF1C1C1E),
                                           letterSpacing: -0.1,
@@ -3499,9 +3504,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                         : null,
                     onChanged: enabled ? onChanged : null,
                     style: const TextStyle(
-                      fontSize: 12.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF1C1C1E),
+                      letterSpacing: -0.2,
                     ),
                   ),
                 ),
@@ -3519,11 +3525,11 @@ class _CustomerCardPageState extends State<CustomerCardPage>
     required ValueChanged<bool?> onChanged,
   }) {
     return Container(
-      height: 36,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: const Color(0xFFE5E5EA),
           width: 1,
@@ -3554,10 +3560,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             child: Text(
               label,
               style: const TextStyle(
-                fontSize: 12.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF1C1C1E),
-                letterSpacing: -0.1,
+                letterSpacing: -0.2,
               ),
             ),
           ),
@@ -3615,10 +3621,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                height: 36,
+                height: 44,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isFocused
                         ? const Color(0xFF5AC8FA)
@@ -3645,6 +3651,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   controller: _vergiNoController,
                   maxLength: 10,
                   keyboardType: TextInputType.number,
+                  textAlignVertical: TextAlignVertical.center,
                   onChanged: (value) {
                     if (value.length == 10) {
                       _sorgulaVergiNo(value);
@@ -3653,13 +3660,14 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   decoration: InputDecoration(
                     hintText: '10 hane',
                     hintStyle: TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       color: const Color(0xFF8E8E93).withOpacity(0.7),
                       fontWeight: FontWeight.w400,
+                      letterSpacing: -0.2,
                     ),
                     prefixIcon: Icon(
                       Icons.assignment_outlined,
-                      size: 16,
+                      size: 18,
                       color: isFocused
                           ? const Color(0xFF5AC8FA)
                           : const Color(0xFF8E8E93),
@@ -3667,20 +3675,20 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     suffixIcon: _vergiNoController.text.length == 10
                         ? const Icon(
                             Icons.check_circle_rounded,
-                            size: 16,
+                            size: 18,
                             color: Color(0xFF34C759),
                           )
                         : null,
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                      horizontal: 14,
+                      vertical: 12,
                     ),
                     isDense: true,
                     counterText: '',
                   ),
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF1C1C1E),
                   ),
@@ -3727,10 +3735,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                height: 36,
+                height: 44,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isFocused
                         ? const Color(0xFF5AC8FA)
@@ -3757,6 +3765,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   controller: _tcKimlikNoController,
                   maxLength: 11,
                   keyboardType: TextInputType.number,
+                  textAlignVertical: TextAlignVertical.center,
                   onChanged: (value) {
                     if (value.length == 11) {
                       _sorgulaTcKimlik(value);
@@ -3765,13 +3774,13 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   decoration: InputDecoration(
                     hintText: '11 hane',
                     hintStyle: TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       color: const Color(0xFF8E8E93).withOpacity(0.7),
                       fontWeight: FontWeight.w400,
                     ),
                     prefixIcon: Icon(
                       Icons.badge_outlined,
-                      size: 16,
+                      size: 18,
                       color: isFocused
                           ? const Color(0xFF5AC8FA)
                           : const Color(0xFF8E8E93),
@@ -3779,14 +3788,14 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     suffixIcon: _tcKimlikNoController.text.length == 11
                         ? const Icon(
                             Icons.check_circle_rounded,
-                            size: 16,
+                            size: 18,
                             color: Color(0xFF34C759),
                           )
                         : null,
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                      horizontal: 14,
+                      vertical: 12,
                     ),
                     isDense: true,
                     counterText: '',
@@ -3828,10 +3837,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
                     curve: Curves.easeInOut,
-                    height: 36,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isFocused
                             ? const Color(0xFF5AC8FA)
@@ -3859,30 +3868,32 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                         Expanded(
                           child: TextField(
                             controller: _vergiDairesiController,
+                            textAlignVertical: TextAlignVertical.center,
                             onChanged: _araVergiDairesi,
                             decoration: InputDecoration(
                               hintText: '3+ karakter',
                               hintStyle: TextStyle(
-                                fontSize: 12,
+                                fontSize: 14,
                                 color: const Color(0xFF8E8E93).withOpacity(0.7),
                                 fontWeight: FontWeight.w400,
+                                letterSpacing: -0.2,
                               ),
                               prefixIcon: Icon(
                                 Icons.account_balance_outlined,
-                                size: 16,
+                                size: 18,
                                 color: isFocused
                                     ? const Color(0xFF5AC8FA)
                                     : const Color(0xFF8E8E93),
                               ),
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
+                                horizontal: 14,
+                                vertical: 12,
                               ),
                               isDense: true,
                             ),
                             style: const TextStyle(
-                              fontSize: 12,
+                              fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: Color(0xFF1C1C1E),
                             ),
@@ -4044,10 +4055,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
                     curve: Curves.easeInOut,
-                    height: 36,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isFocused
                             ? const Color(0xFF5AC8FA)
@@ -4073,22 +4084,23 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     child: TextField(
                       controller: _adresAraController,
                       maxLines: 1,
+                      textAlignVertical: TextAlignVertical.center,
                       onChanged: (value) {
                         _araAdres(value);
                       },
                       decoration: InputDecoration(
                         hintText: 'İl, ilçe veya mahalle yazın...',
                         hintStyle: TextStyle(
-                          fontSize: 12.5,
+                          fontSize: 14,
                           color: const Color(0xFF8E8E93).withOpacity(0.7),
                           fontWeight: FontWeight.w400,
-                          letterSpacing: -0.1,
+                          letterSpacing: -0.2,
                         ),
                         prefixIcon: Padding(
-                          padding: const EdgeInsets.only(left: 12, right: 6),
+                          padding: const EdgeInsets.only(left: 14, right: 6),
                           child: Icon(
                             Icons.search_rounded,
-                            size: 16,
+                            size: 18,
                             color: isFocused
                                 ? const Color(0xFF5AC8FA)
                                 : const Color(0xFF8E8E93),
@@ -4100,13 +4112,13 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 7,
+                          horizontal: 14,
+                          vertical: 12,
                         ),
                         isDense: true,
                       ),
                       style: const TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: Color(0xFF1C1C1E),
                         letterSpacing: -0.2,
@@ -4234,10 +4246,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                height: 36,
+                height: 44,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isFocused
                         ? const Color(0xFF5AC8FA)
@@ -4267,6 +4279,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                         controller: _vergiKoduController,
                         keyboardType: TextInputType.number,
                         maxLength: 5,
+                        textAlignVertical: TextAlignVertical.center,
                         onChanged: (value) {
                           if (value.length >= 3) {
                             // Vergi koduna göre vergi dairesi bul
@@ -4284,27 +4297,28 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                         decoration: InputDecoration(
                           hintText: 'Kod',
                           hintStyle: TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             color: const Color(0xFF8E8E93).withOpacity(0.7),
                             fontWeight: FontWeight.w400,
+                            letterSpacing: -0.2,
                           ),
                           prefixIcon: Icon(
                             Icons.numbers_rounded,
-                            size: 16,
+                            size: 18,
                             color: isFocused
                                 ? const Color(0xFF5AC8FA)
                                 : const Color(0xFF8E8E93),
                           ),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                            horizontal: 14,
+                            vertical: 12,
                           ),
                           isDense: true,
                           counterText: '',
                         ),
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF1C1C1E),
                         ),
@@ -4406,10 +4420,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                height: maxLines > 1 ? null : 36,
+                height: maxLines > 1 ? null : 44,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isFocused
                         ? const Color(0xFF5AC8FA)
@@ -4440,22 +4454,23 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                         focusNode: focusNode,
                         maxLines: maxLines,
                         inputFormatters: inputFormatters,
+                        textAlignVertical: TextAlignVertical.center,
                         onChanged: onChanged != null
                             ? (value) => onChanged(value, controller)
                             : null,
                         decoration: InputDecoration(
                           hintText: hint,
                           hintStyle: const TextStyle(
-                            fontSize: 12.5,
+                            fontSize: 14,
                             color: Color(0xFFAEAEB2),
                             fontWeight: FontWeight.w400,
-                            letterSpacing: -0.1,
+                            letterSpacing: -0.2,
                           ),
                           prefixIcon: Padding(
-                            padding: const EdgeInsets.only(left: 12, right: 6),
+                            padding: const EdgeInsets.only(left: 14, right: 6),
                             child: Icon(
                               icon,
-                              size: 16,
+                              size: 18,
                               color: isFocused
                                   ? const Color(0xFF5AC8FA)
                                   : const Color(0xFF8E8E93),
@@ -4467,13 +4482,13 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                           ),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: maxLines > 1 ? 8 : 9,
+                            horizontal: 14,
+                            vertical: maxLines > 1 ? 12 : 12,
                           ),
                           isDense: true,
                         ),
                         style: const TextStyle(
-                          fontSize: 12.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF1C1C1E),
                           letterSpacing: -0.2,
@@ -4532,11 +4547,12 @@ class _CustomerCardPageState extends State<CustomerCardPage>
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                height: 44,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isFocused
                         ? const Color(0xFF5AC8FA)
@@ -4578,7 +4594,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                           ),
                           child: Icon(
                             icon,
-                            size: 16,
+                            size: 18,
                             color: isFocused
                                 ? const Color(0xFF5AC8FA)
                                 : const Color(0xFF8E8E93),
@@ -4588,9 +4604,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                         Text(
                           hint,
                           style: TextStyle(
-                            fontSize: 12.5,
+                            fontSize: 14,
                             color: const Color(0xFF8E8E93).withOpacity(0.7),
                             fontWeight: FontWeight.w400,
+                            letterSpacing: -0.2,
                           ),
                         ),
                       ],
@@ -4611,14 +4628,14 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                                 children: [
                                   Icon(
                                     icon,
-                                    size: 16,
+                                    size: 18,
                                     color: const Color(0xFF8E8E93),
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
                                     item,
                                     style: const TextStyle(
-                                      fontSize: 12.5,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w500,
                                       color: Color(0xFF1C1C1E),
                                       letterSpacing: -0.2,
@@ -4648,44 +4665,80 @@ class _CustomerCardPageState extends State<CustomerCardPage>
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         // Kaydet Butonu
-        SizedBox(
-          height: 32,
+        Container(
+          height: 44,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF007AFF),
+                Color(0xFF0051D5),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF007AFF).withOpacity(0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
           child: ElevatedButton.icon(
             onPressed: _isSaving ? null : _saveCustomer,
             icon: _isSaving
                 ? const SizedBox(
-                    width: 13,
-                    height: 13,
+                    width: 16,
+                    height: 16,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2,
+                      strokeWidth: 2.5,
                       valueColor: AlwaysStoppedAnimation(Colors.white),
                     ),
                   )
-                : const Icon(Icons.check_rounded, size: 13),
+                : const Icon(Icons.check_rounded, size: 18),
             label: Text(
               _isSaving ? 'Kaydediliyor...' : 'Kaydet',
               style: const TextStyle(
-                fontSize: 11.5,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
-                letterSpacing: -0.2,
+                letterSpacing: -0.3,
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF007AFF),
+              backgroundColor: Colors.transparent,
               foregroundColor: Colors.white,
               elevation: 0,
               shadowColor: Colors.transparent,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(12),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
         // Temizle Butonu
-        SizedBox(
-          height: 32,
+        Container(
+          height: 44,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFFFCC00),
+                Color(0xFFFFB800),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFCC00).withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: ElevatedButton.icon(
             onPressed: () {
               setState(() {
@@ -4726,31 +4779,39 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 _hasUnsavedChanges = false;
               });
             },
-            icon: const Icon(Icons.cleaning_services_rounded, size: 13),
+            icon: const Icon(Icons.cleaning_services_rounded, size: 18),
             label: const Text(
               'Temizle',
               style: TextStyle(
-                fontSize: 11.5,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
-                letterSpacing: -0.2,
+                letterSpacing: -0.3,
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFCC00),
+              backgroundColor: Colors.transparent,
               foregroundColor: Colors.white,
               elevation: 0,
               shadowColor: Colors.transparent,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(12),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
         // Vazgeç Butonu
-        SizedBox(
-          height: 32,
+        Container(
+          height: 44,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF2F2F7),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFE5E5EA),
+              width: 1,
+            ),
+          ),
           child: ElevatedButton.icon(
             onPressed: () async {
               if (_hasFormData() && _hasUnsavedChanges) {
@@ -4762,24 +4823,24 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 widget.onClose();
               }
             },
-            icon: const Icon(Icons.close_rounded, size: 13),
+            icon: const Icon(Icons.close_rounded, size: 18),
             label: const Text(
               'Vazgeç',
               style: TextStyle(
-                fontSize: 11.5,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
-                letterSpacing: -0.2,
+                letterSpacing: -0.3,
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF3B30),
-              foregroundColor: Colors.white,
+              backgroundColor: Colors.transparent,
+              foregroundColor: const Color(0xFF8E8E93),
               elevation: 0,
               shadowColor: Colors.transparent,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(12),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
             ),
           ),
         ),
