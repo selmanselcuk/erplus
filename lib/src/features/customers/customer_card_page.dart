@@ -124,10 +124,11 @@ class _CustomerCardPageState extends State<CustomerCardPage>
   bool _vergiDairesiAraniyor = false;
 
   // Vergi sekmesi state değişkenleri
-  String? _selectedVarsayilanKDV;
-  String? _selectedIkinciKDV;
+  final TextEditingController _kdvOraniController = TextEditingController();
   bool _kdvIstisnasiVar = false;
-  final TextEditingController _kdvIstisnaKoduController =
+  final TextEditingController _kdvIstisnaBelgeNoController =
+      TextEditingController();
+  final TextEditingController _kdvIstisnaBelgeTarihiController =
       TextEditingController();
   bool _ozelMatrahUygulamasi = false;
   final TextEditingController _ozelMatrahOraniController =
@@ -2109,222 +2110,694 @@ class _CustomerCardPageState extends State<CustomerCardPage>
 
   Widget _buildVergiTab() {
     return Container(
-      margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFFF5F7FA),
-            const Color(0xFFE8EDF4),
+            const Color(0xFFF8F9FA),
+            const Color(0xFFFFFFFF),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // KDV ve Matrah Bilgileri
-            _buildSectionTitle(
-                'KDV ve Matrah Bilgileri', Icons.calculate_outlined),
+            // Premium Header
+            _buildPremiumSectionHeader(
+              'Vergi Bilgileri',
+              Icons.account_balance_rounded,
+              const Color(0xFF5856D6),
+            ),
+            const SizedBox(height: 24),
+
+            // KDV ve Matrah Bilgileri Kartı
+            _buildAppleCard(
+              icon: Icons.calculate_outlined,
+              title: 'KDV ve Matrah',
+              color: const Color(0xFF007AFF),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _kdvOraniController,
+                          label: 'KDV Oranı',
+                          hint: '%',
+                          icon: Icons.percent_rounded,
+                          inputFormatters: [PercentageFormatter()],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'KDV İstisnası',
+                          value: _kdvIstisnasiVar,
+                          onChanged: (value) {
+                            setState(() {
+                              _kdvIstisnasiVar = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _kdvIstisnaBelgeNoController,
+                          label: 'İstisna Belge No',
+                          hint: 'Belge numarası',
+                          icon: Icons.badge_outlined,
+                          enabled: _kdvIstisnasiVar,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _kdvIstisnaBelgeTarihiController,
+                          label: 'İstisna Belgesi Tarihi',
+                          hint: 'GG.AA.YYYY',
+                          icon: Icons.calendar_today_rounded,
+                          enabled: _kdvIstisnasiVar,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Özel Matrah Uygulaması',
+                          value: _ozelMatrahUygulamasi,
+                          onChanged: (value) {
+                            setState(() {
+                              _ozelMatrahUygulamasi = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _ozelMatrahOraniController,
+                          label: 'Matrah Oranı',
+                          hint: '%',
+                          icon: Icons.percent_rounded,
+                          enabled: _ozelMatrahUygulamasi,
+                          inputFormatters: [PercentageFormatter()],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _kdvTevkifatOraniController,
+                          label: 'KDV Tevkifat Oranı',
+                          hint: '%',
+                          icon: Icons.account_balance_outlined,
+                          inputFormatters: [PercentageFormatter()],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _kdvTevkifatKoduController,
+                          label: 'KDV Tevkifat Kodu',
+                          hint: 'Kod',
+                          icon: Icons.qr_code_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Stopaj ve Kesinti Kartı
+            _buildAppleCard(
+              icon: Icons.cut_outlined,
+              title: 'Stopaj ve Kesinti Bilgileri',
+              color: const Color(0xFF34C759),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _gelirVergisiStopajOraniController,
+                          label: 'Gelir Vergisi Stopajı',
+                          hint: '%',
+                          icon: Icons.money_off_rounded,
+                          inputFormatters: [PercentageFormatter()],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Stopaj İstisnası',
+                          value: _stopajIstisnasiVar,
+                          onChanged: (value) {
+                            setState(() {
+                              _stopajIstisnasiVar = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _stopajIstisnaBelgeTarihiController,
+                    label: 'İstisna Belgesi Tarihi',
+                    hint: 'GG.AA.YYYY',
+                    icon: Icons.calendar_today_rounded,
+                    enabled: _stopajIstisnasiVar,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Damga Vergisi Uygulaması',
+                          value: _damgaVergisiUygulamasi,
+                          onChanged: (value) {
+                            setState(() {
+                              _damgaVergisiUygulamasi = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'BSMV Uygulaması',
+                          value: _bsmvUygulamasi,
+                          onChanged: (value) {
+                            setState(() {
+                              _bsmvUygulamasi = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // e-Belge Entegrasyon Kartı
+            _buildAppleCard(
+              icon: Icons.cloud_outlined,
+              title: 'e-Belge Entegrasyon',
+              color: const Color(0xFF5856D6),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildDropdown(
+                          label: 'e-Fatura Durumu',
+                          hint: 'Seçin',
+                          icon: Icons.receipt_long_rounded,
+                          value: _selectedEFaturaDurumu,
+                          items: ['Mükellefi', 'Değil'],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedEFaturaDurumu = value;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildDropdown(
+                          label: 'e-Fatura Senaryosu',
+                          hint: 'Seçin',
+                          icon: Icons.category_outlined,
+                          value: _selectedEFaturaSenaryosu,
+                          items: ['Temel', 'Ticari', 'Kamu'],
+                          enabled: _selectedEFaturaDurumu == 'Mükellefi',
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedEFaturaSenaryosu = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _eFaturaPostaKutusuController,
+                    label: 'e-Fatura Posta Kutusu Etiketi',
+                    hint: 'GİB etiketi',
+                    icon: Icons.email_outlined,
+                    enabled: _selectedEFaturaDurumu == 'Mükellefi',
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildDropdown(
+                          label: 'e-Arşiv Durumu',
+                          hint: 'Seçin',
+                          icon: Icons.archive_outlined,
+                          value: _selectedEArsivDurumu,
+                          items: ['Mükellefi', 'Değil'],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedEArsivDurumu = value;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildDropdown(
+                          label: 'e-İrsaliye Durumu',
+                          hint: 'Seçin',
+                          icon: Icons.local_shipping_outlined,
+                          value: _selectedEIrsaliyeDurumu,
+                          items: ['Mükellefi', 'Değil'],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedEIrsaliyeDurumu = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'e-Müstahsil Makbuzu',
+                          value: _eMustahsilUygulamasi,
+                          onChanged: (value) {
+                            setState(() {
+                              _eMustahsilUygulamasi = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildDropdown(
+                          label: 'e-Fatura Gönderim Şekli',
+                          hint: 'Seçin',
+                          icon: Icons.send_rounded,
+                          value: _selectedEFaturaGonderimSekli,
+                          items: ['Otomatik', 'Manuel', 'Toplu'],
+                          enabled: _selectedEFaturaDurumu == 'Mükellefi',
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedEFaturaGonderimSekli = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Özel Durum ve Muafiyetler Kartı
+            _buildAppleCard(
+              icon: Icons.workspace_premium_outlined,
+              title: 'Özel Durum ve Muafiyetler',
+              color: const Color(0xFFFF9500),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Engelli İndirimi',
+                          value: _engelliIndirimiVar,
+                          onChanged: (value) {
+                            setState(() {
+                              _engelliIndirimiVar = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _engelliIndirimiOraniController,
+                          label: 'İndirim Oranı',
+                          hint: '%',
+                          icon: Icons.percent_rounded,
+                          enabled: _engelliIndirimiVar,
+                          inputFormatters: [PercentageFormatter()],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Ar-Ge İndirimi',
+                          value: _argeIndirimiVar,
+                          onChanged: (value) {
+                            setState(() {
+                              _argeIndirimiVar = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _argeIndirimiBelgeNoController,
+                          label: 'Belge No',
+                          hint: 'Belge numarası',
+                          icon: Icons.badge_outlined,
+                          enabled: _argeIndirimiVar,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Yatırım Teşvik Belgesi',
+                          value: _yatirimTesvik,
+                          onChanged: (value) {
+                            setState(() {
+                              _yatirimTesvik = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _yatirimTesvikBelgeNoController,
+                          label: 'Belge No',
+                          hint: 'Belge numarası',
+                          icon: Icons.badge_outlined,
+                          enabled: _yatirimTesvik,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _yatirimTesvikGecerlilikController,
+                    label: 'Geçerlilik Tarihi',
+                    hint: 'GG.AA.YYYY',
+                    icon: Icons.calendar_today_rounded,
+                    enabled: _yatirimTesvik,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Teknoloji Geliştirme Bölgesi',
+                          value: _teknolojiGelistirmeBolgesi,
+                          onChanged: (value) {
+                            setState(() {
+                              _teknolojiGelistirmeBolgesi = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Serbest Bölge',
+                          value: _serbestBolge,
+                          onChanged: (value) {
+                            setState(() {
+                              _serbestBolge = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Organize Sanayi Bölgesi',
+                          value: _osb,
+                          onChanged: (value) {
+                            setState(() {
+                              _osb = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Gümrük Müşavirliği',
+                          value: _gumrukMusavirligi,
+                          onChanged: (value) {
+                            setState(() {
+                              _gumrukMusavirligi = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _gumrukMusavirlikBelgeNoController,
+                    label: 'Gümrük Müşavirliği Belge No',
+                    hint: 'Belge numarası',
+                    icon: Icons.badge_outlined,
+                    enabled: _gumrukMusavirligi,
+                  ),
+                ],
+              ),
+            ),
+
+            // Ödeme ve Vergi Dönemleri Kartı
+            _buildAppleCard(
+              icon: Icons.event_repeat_outlined,
+              title: 'Ödeme ve Vergi Dönemleri',
+              color: const Color(0xFFFF2D55),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildDropdown(
+                          label: 'KDV Beyan Dönemi',
+                          hint: 'Seçin',
+                          icon: Icons.calendar_view_month_rounded,
+                          value: _selectedKDVBeyanDonemi,
+                          items: ['Aylık', '3 Aylık'],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedKDVBeyanDonemi = value;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Geçici Vergi Mükellefi',
+                          value: _geciciVergiMukellefi,
+                          onChanged: (value) {
+                            setState(() {
+                              _geciciVergiMukellefi = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildCheckboxField(
+                    label: 'Muhtasar Beyanname Verilecek',
+                    value: _muhtasarBeyanname,
+                    onChanged: (value) {
+                      setState(() {
+                        _muhtasarBeyanname = value ?? false;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            // Fatura Notları Kartı
+            _buildAppleCard(
+              icon: Icons.note_alt_outlined,
+              title: 'Fatura Notları ve Uyarılar',
+              color: const Color(0xFF30B0C7),
+              child: Column(
+                children: [
+                  _buildTextField(
+                    controller: _faturaOzelNotController,
+                    label: 'Faturada Yazılacak Özel Not',
+                    hint: 'Tevkifat, istisna açıklamaları vb.',
+                    icon: Icons.sticky_note_2_outlined,
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _muhasebeNotlariController,
+                    label: 'Muhasebe Notları',
+                    hint: 'İç kullanım için notlar',
+                    icon: Icons.notes_rounded,
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _vergiDairesiOzelAnlasmalarController,
+                    label: 'Vergi Dairesi ile Özel Anlaşmalar',
+                    hint: 'Varsa özel durumlar',
+                    icon: Icons.handshake_outlined,
+                    maxLines: 2,
+                  ),
+                ],
+              ),
+            ),
+
+            // Vergi İadesi Kartı
+            _buildAppleCard(
+              icon: Icons.currency_exchange_outlined,
+              title: 'Vergi İadesi ve Mahsup',
+              color: const Color(0xFF34C759),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'İade Talep Durumu',
+                          value: _iadeTalepDurumu,
+                          onChanged: (value) {
+                            setState(() {
+                              _iadeTalepDurumu = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildDropdown(
+                          label: 'İade Yöntemi',
+                          hint: 'Seçin',
+                          icon: Icons.payment_rounded,
+                          value: _selectedIadeYontemi,
+                          items: ['Nakit', 'Mahsup'],
+                          enabled: _iadeTalepDurumu,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedIadeYontemi = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _mahsubenIadeIBANController,
+                    label: 'Mahsuben İade IBAN',
+                    hint: 'TR00 0000 0000 0000 0000 0000 00',
+                    icon: Icons.account_balance_rounded,
+                    enabled: _iadeTalepDurumu,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildDropdown(
+                    label: 'Vergi İadesi Sıklığı',
+                    hint: 'Seçin',
+                    icon: Icons.repeat_rounded,
+                    value: _selectedVergiIadesiSikligi,
+                    items: ['Aylık', 'Dönemsel'],
+                    enabled: _iadeTalepDurumu,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedVergiIadesiSikligi = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            // Diğer Vergiler Kartı
+            _buildAppleCard(
+              icon: Icons.receipt_outlined,
+              title: 'Diğer Vergiler',
+              color: const Color(0xFFAF52DE),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildCheckboxField(
+                      label: 'ÖTV Mükellefi',
+                      value: _otvMukellefi,
+                      onChanged: (value) {
+                        setState(() {
+                          _otvMukellefi = value ?? false;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _otvOraniController,
+                      label: 'ÖTV Oranı',
+                      hint: '%',
+                      icon: Icons.percent_rounded,
+                      enabled: _otvMukellefi,
+                      inputFormatters: [PercentageFormatter()],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Denetim ve Uyumluluk Kartı (zaten doğru)
             const SizedBox(height: 14),
             Row(
-              children: [
-                Expanded(
-                  child: _buildDropdown(
-                    label: 'Varsayılan KDV Oranı',
-                    hint: 'Oran seçin',
-                    icon: Icons.percent_rounded,
-                    value: _selectedVarsayilanKDV,
-                    items: ['%0', '%1', '%8', '%10', '%20'],
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedVarsayilanKDV = value;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildDropdown(
-                    label: 'İkinci KDV Oranı',
-                    hint: 'Opsiyonel',
-                    icon: Icons.percent_rounded,
-                    value: _selectedIkinciKDV,
-                    items: ['%0', '%1', '%8', '%10', '%20'],
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedIkinciKDV = value;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCheckboxField(
-                    label: 'KDV İstisna Durumu',
-                    value: _kdvIstisnasiVar,
-                    onChanged: (value) {
-                      setState(() {
-                        _kdvIstisnasiVar = value ?? false;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTextField(
-                    controller: _kdvIstisnaKoduController,
-                    label: 'İstisna Kodu',
-                    hint: 'İhracat, transit vb.',
-                    icon: Icons.code_rounded,
-                    enabled: _kdvIstisnasiVar,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCheckboxField(
-                    label: 'Özel Matrah Uygulaması',
-                    value: _ozelMatrahUygulamasi,
-                    onChanged: (value) {
-                      setState(() {
-                        _ozelMatrahUygulamasi = value ?? false;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTextField(
-                    controller: _ozelMatrahOraniController,
-                    label: 'Matrah Oranı',
-                    hint: '%',
-                    icon: Icons.percent_rounded,
-                    enabled: _ozelMatrahUygulamasi,
-                    inputFormatters: [PercentageFormatter()],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    controller: _kdvTevkifatOraniController,
-                    label: 'KDV Tevkifat Oranı',
-                    hint: '%',
-                    icon: Icons.account_balance_outlined,
-                    inputFormatters: [PercentageFormatter()],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTextField(
-                    controller: _kdvTevkifatKoduController,
-                    label: 'KDV Tevkifat Kodu',
-                    hint: 'Kod',
-                    icon: Icons.qr_code_rounded,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-            _buildDivider(),
-            const SizedBox(height: 24),
-
-            // Stopaj ve Kesinti Bilgileri
-            _buildSectionTitle(
-                'Stopaj ve Kesinti Bilgileri', Icons.cut_outlined),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    controller: _gelirVergisiStopajOraniController,
-                    label: 'Gelir Vergisi Stopajı',
-                    hint: '%',
-                    icon: Icons.money_off_rounded,
-                    inputFormatters: [PercentageFormatter()],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildCheckboxField(
-                    label: 'Stopaj İstisnası',
-                    value: _stopajIstisnasiVar,
-                    onChanged: (value) {
-                      setState(() {
-                        _stopajIstisnasiVar = value ?? false;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _buildTextField(
-              controller: _stopajIstisnaBelgeTarihiController,
-              label: 'İstisna Belgesi Tarihi',
-              hint: 'GG.AA.YYYY',
-              icon: Icons.calendar_today_rounded,
-              enabled: _stopajIstisnasiVar,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCheckboxField(
-                    label: 'Damga Vergisi Uygulaması',
-                    value: _damgaVergisiUygulamasi,
-                    onChanged: (value) {
-                      setState(() {
-                        _damgaVergisiUygulamasi = value ?? false;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildCheckboxField(
-                    label: 'BSMV Uygulaması',
-                    value: _bsmvUygulamasi,
-                    onChanged: (value) {
-                      setState(() {
-                        _bsmvUygulamasi = value ?? false;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-            _buildDivider(),
-            const SizedBox(height: 24),
-
-            // e-Belge Entegrasyon Bilgileri
-            _buildSectionTitle('e-Belge Entegrasyon', Icons.cloud_outlined),
-            const SizedBox(height: 14),
-            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _buildDropdown(
@@ -2368,6 +2841,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             ),
             const SizedBox(height: 12),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _buildDropdown(
@@ -2402,6 +2876,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             ),
             const SizedBox(height: 12),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _buildCheckboxField(
@@ -2442,6 +2917,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 'Özel Durum ve Muafiyetler', Icons.workspace_premium_outlined),
             const SizedBox(height: 14),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _buildCheckboxField(
@@ -2469,6 +2945,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             ),
             const SizedBox(height: 12),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _buildCheckboxField(
@@ -2495,6 +2972,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             ),
             const SizedBox(height: 12),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _buildCheckboxField(
@@ -2529,6 +3007,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             ),
             const SizedBox(height: 12),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _buildCheckboxField(
@@ -2557,6 +3036,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             ),
             const SizedBox(height: 12),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _buildCheckboxField(
@@ -2601,6 +3081,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 'Ödeme ve Vergi Dönemleri', Icons.event_repeat_outlined),
             const SizedBox(height: 14),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _buildDropdown(
@@ -2682,6 +3163,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                 'Vergi İadesi ve Mahsup', Icons.currency_exchange_outlined),
             const SizedBox(height: 14),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _buildCheckboxField(
@@ -2743,6 +3225,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             _buildSectionTitle('Diğer Vergiler', Icons.receipt_outlined),
             const SizedBox(height: 14),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: _buildCheckboxField(
@@ -2773,152 +3256,262 @@ class _CustomerCardPageState extends State<CustomerCardPage>
             _buildDivider(),
             const SizedBox(height: 24),
 
-            // Denetim ve Uyumluluk
-            _buildSectionTitle('Denetim ve Uyumluluk', Icons.security_outlined),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    controller: _sonVergiIncelemeTarihiController,
-                    label: 'Son Vergi İncelemesi',
-                    hint: 'GG.AA.YYYY',
-                    icon: Icons.calendar_today_rounded,
+            // Denetim ve Uyumluluk Kartı
+            _buildAppleCard(
+              icon: Icons.security_outlined,
+              title: 'Denetim ve Uyumluluk',
+              color: const Color(0xFFFF3B30),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _sonVergiIncelemeTarihiController,
+                          label: 'Son Vergi İncelemesi',
+                          hint: 'GG.AA.YYYY',
+                          icon: Icons.calendar_today_rounded,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _sonVergiIncelemeSonucuController,
+                          label: 'İnceleme Sonucu',
+                          hint: 'Sonuç',
+                          icon: Icons.assignment_turned_in_outlined,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTextField(
-                    controller: _sonVergiIncelemeSonucuController,
-                    label: 'İnceleme Sonucu',
-                    hint: 'Sonuç',
-                    icon: Icons.assignment_turned_in_outlined,
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Vergi Borcu Var',
+                          value: _vergiBorcuVar,
+                          onChanged: (value) {
+                            setState(() {
+                              _vergiBorcuVar = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _vergiBorcuTutariController,
+                          label: 'Borç Tutarı',
+                          hint: '0,00',
+                          icon: Icons.attach_money_rounded,
+                          enabled: _vergiBorcuVar,
+                          inputFormatters: [TurkishNumberFormatter()],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCheckboxField(
-                    label: 'Vergi Borcu Var',
-                    value: _vergiBorcuVar,
-                    onChanged: (value) {
-                      setState(() {
-                        _vergiBorcuVar = value ?? false;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTextField(
-                    controller: _vergiBorcuTutariController,
-                    label: 'Borç Tutarı',
-                    hint: '0,00',
-                    icon: Icons.attach_money_rounded,
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _vergiBorcuTaksitController,
+                    label: 'Taksit Bilgisi',
+                    hint: 'Taksit sayısı ve detayları',
+                    icon: Icons.info_outline_rounded,
                     enabled: _vergiBorcuVar,
-                    inputFormatters: [TurkishNumberFormatter()],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _buildTextField(
-              controller: _vergiBorcuTaksitController,
-              label: 'Taksit Bilgisi',
-              hint: 'Taksit sayısı ve detayları',
-              icon: Icons.info_outline_rounded,
-              enabled: _vergiBorcuVar,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCheckboxField(
-                    label: 'Uzlaşma Süreci Devam Ediyor',
-                    value: _uzlasmaSureci,
-                    onChanged: (value) {
-                      setState(() {
-                        _uzlasmaSureci = value ?? false;
-                      });
-                    },
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Uzlaşma Süreci Devam Ediyor',
+                          value: _uzlasmaSureci,
+                          onChanged: (value) {
+                            setState(() {
+                              _uzlasmaSureci = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Özelge Durumu',
+                          value: _ozelgeDurumu,
+                          onChanged: (value) {
+                            setState(() {
+                              _ozelgeDurumu = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildCheckboxField(
-                    label: 'Özelge Durumu',
-                    value: _ozelgeDurumu,
-                    onChanged: (value) {
-                      setState(() {
-                        _ozelgeDurumu = value ?? false;
-                      });
-                    },
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _ozelgeNoController,
+                    label: 'Özelge No',
+                    hint: 'Özelge numarası',
+                    icon: Icons.confirmation_number_outlined,
+                    enabled: _ozelgeDurumu,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _buildTextField(
-              controller: _ozelgeNoController,
-              label: 'Özelge No',
-              hint: 'Özelge numarası',
-              icon: Icons.confirmation_number_outlined,
-              enabled: _ozelgeDurumu,
+                ],
+              ),
             ),
 
-            const SizedBox(height: 24),
-            _buildDivider(),
-            const SizedBox(height: 24),
-
-            // Raporlama Tercihleri
-            _buildSectionTitle(
-                'Raporlama Tercihleri', Icons.analytics_outlined),
-            const SizedBox(height: 14),
-            _buildDropdown(
-              label: 'KDV Beyanname Detay Seviyesi',
-              hint: 'Seçin',
-              icon: Icons.list_alt_rounded,
-              value: _selectedKDVBeyannameDetay,
-              items: ['Özet', 'Detaylı'],
-              onChanged: (value) {
-                setState(() {
-                  _selectedKDVBeyannameDetay = value;
-                });
-              },
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCheckboxField(
-                    label: 'BA/BS Formu Gerekli',
-                    value: _baFormGerekli,
+            // Raporlama Tercihleri Kartı
+            _buildAppleCard(
+              icon: Icons.analytics_outlined,
+              title: 'Raporlama Tercihleri',
+              color: const Color(0xFF007AFF),
+              child: Column(
+                children: [
+                  _buildDropdown(
+                    label: 'KDV Beyanname Detay Seviyesi',
+                    hint: 'Seçin',
+                    icon: Icons.list_alt_rounded,
+                    value: _selectedKDVBeyannameDetay,
+                    items: ['Özet', 'Detaylı'],
                     onChanged: (value) {
                       setState(() {
-                        _baFormGerekli = value ?? false;
+                        _selectedKDVBeyannameDetay = value;
                       });
                     },
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildCheckboxField(
-                    label: 'Form AA/AB Gerekli',
-                    value: _formAAGerekli,
-                    onChanged: (value) {
-                      setState(() {
-                        _formAAGerekli = value ?? false;
-                      });
-                    },
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'BA/BS Formu Gerekli',
+                          value: _baFormGerekli,
+                          onChanged: (value) {
+                            setState(() {
+                              _baFormGerekli = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildCheckboxField(
+                          label: 'Form AA/AB Gerekli',
+                          value: _formAAGerekli,
+                          onChanged: (value) {
+                            setState(() {
+                              _formAAGerekli = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAppleCard({
+    required IconData icon,
+    required String title,
+    required Color color,
+    required Widget child,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Card Header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  color.withOpacity(0.08),
+                  color.withOpacity(0.03),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        color,
+                        color.withOpacity(0.7),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: '.SF Pro Display',
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1C1C1E),
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Card Content
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: child,
+          ),
+        ],
       ),
     );
   }
@@ -3414,6 +4007,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                   child: DropdownButton<String>(
                     value: value,
                     hint: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
@@ -3470,6 +4064,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.all(4),
@@ -3543,6 +4138,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
         ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Transform.scale(
             scale: 0.85,
@@ -3801,9 +4397,10 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                     counterText: '',
                   ),
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF1C1C1E),
+                    letterSpacing: -0.2,
                   ),
                 ),
               );
@@ -3896,6 +4493,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: Color(0xFF1C1C1E),
+                              letterSpacing: -0.2,
                             ),
                           ),
                         ),
@@ -4321,6 +4919,7 @@ class _CustomerCardPageState extends State<CustomerCardPage>
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF1C1C1E),
+                          letterSpacing: -0.2,
                         ),
                       ),
                     ),
