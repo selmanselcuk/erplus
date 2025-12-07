@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../features/dashboard/dashboard_page.dart';
 import '../features/customers/customers_page.dart';
@@ -487,20 +487,25 @@ class _ERPlusShellState extends State<ERPlusShell> {
   ];
 
   static const _menuItems = <_MenuItem>[
-    _MenuItem(Icons.space_dashboard_rounded, 'Dashboard'),
-    _MenuItem(Icons.groups_rounded, 'Cari Hesap Yönetimi'),
-    _MenuItem(Icons.inventory_2_rounded, 'Stok & Ürün Yönetimi'),
-    _MenuItem(Icons.trending_up_rounded, 'Satış Yönetimi'),
-    _MenuItem(Icons.shopping_bag_rounded, 'Satın Alma Yönetimi'),
-    _MenuItem(Icons.account_balance_wallet_rounded, 'Finans Yönetimi'),
-    _MenuItem(Icons.timeline_rounded, 'Proje Yönetimi'),
-    _MenuItem(Icons.badge_rounded, 'İK Yönetimi'),
-    _MenuItem(Icons.build_circle_rounded, 'Servis Yönetimi'),
-    _MenuItem(Icons.hub_rounded, 'CRM Yönetimi'),
-    _MenuItem(Icons.insights_rounded, 'Raporlama Yönetimi'),
-    _MenuItem(Icons.device_hub_rounded, 'Entegrasyon Yönetimi'),
-    _MenuItem(Icons.verified_user_rounded, 'Uyumluluk Yönetimi'),
-    _MenuItem(Icons.tune_rounded, 'Ayarlar Yönetimi'),
+    _MenuItem(Icons.space_dashboard_rounded, 'Dashboard', Color(0xFF007AFF)),
+    _MenuItem(Icons.groups_rounded, 'Cari Hesap Yönetimi', Color(0xFF34C759)),
+    _MenuItem(
+        Icons.inventory_2_rounded, 'Stok & Ürün Yönetimi', Color(0xFFFF9500)),
+    _MenuItem(Icons.trending_up_rounded, 'Satış Yönetimi', Color(0xFFFF3B30)),
+    _MenuItem(
+        Icons.shopping_bag_rounded, 'Satın Alma Yönetimi', Color(0xFF5856D6)),
+    _MenuItem(Icons.account_balance_wallet_rounded, 'Finans Yönetimi',
+        Color(0xFF00C7BE)),
+    _MenuItem(Icons.timeline_rounded, 'Proje Yönetimi', Color(0xFFFF2D55)),
+    _MenuItem(Icons.badge_rounded, 'İK Yönetimi', Color(0xFFAF52DE)),
+    _MenuItem(Icons.build_circle_rounded, 'Servis Yönetimi', Color(0xFFFFCC00)),
+    _MenuItem(Icons.hub_rounded, 'CRM Yönetimi', Color(0xFF32ADE6)),
+    _MenuItem(Icons.insights_rounded, 'Raporlama Yönetimi', Color(0xFFFF6482)),
+    _MenuItem(
+        Icons.device_hub_rounded, 'Entegrasyon Yönetimi', Color(0xFF8E8E93)),
+    _MenuItem(
+        Icons.verified_user_rounded, 'Uyumluluk Yönetimi', Color(0xFF5AC8FA)),
+    _MenuItem(Icons.tune_rounded, 'Ayarlar Yönetimi', Color(0xFF64D2FF)),
   ];
 
   // ---------------------------------------------------------------------------
@@ -1054,21 +1059,439 @@ class _ERPlusShellState extends State<ERPlusShell> {
       );
     }
 
-    // 💻 Desktop / Tablet
+    // 💻 Desktop / Tablet - YENİ YAPI
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFFF5F7FA),
       body: SafeArea(
-        child: Row(
-          children: [
-            _buildSidebarPanel(),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: _buildPageWithHeader(theme),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // HEADER (Üst - Rounded)
+              _buildTopHeader(),
+              const SizedBox(height: 12),
+
+              // ORTA ALAN (Sidebar + Content)
+              Expanded(
+                child: Row(
+                  children: [
+                    // Sol Sidebar
+                    _buildCompactSidebar(),
+                    const SizedBox(width: 12),
+                    // Sağ İçerik
+                    Expanded(child: _buildMainContent(theme)),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 12),
+              // FOOTER (Alt - Rounded)
+              _buildBottomFooter(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Header Widget
+  Widget _buildTopHeader() {
+    return Container(
+      height: 64,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          // Logo
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFF007AFF),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Center(
+              child: Text(
+                'E',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Eksen ERP',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1D1D1F),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  const Text(
+                    'v2.0 Pro',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Color(0xFF86868B),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF34C759).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'Enterprise',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF34C759),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const Spacer(),
+          // Kullanıcı bilgisi alanı (header'ın parçası gibi, sağa yapışık)
+          Container(
+            height: 60,
+            padding: const EdgeInsets.only(left: 20, right: 20),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF7FAFC),
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(16),
+              ),
+              border: Border(
+                left: BorderSide(color: const Color(0xFFE2E8F0), width: 1),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF007AFF),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'SA',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Selman Aksaya',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1D1D1F),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF34C759),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        const Text(
+                          'Sistem Yöneticisi',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF86868B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 18,
+                  color: Color(0xFF86868B),
+                ),
+                const SizedBox(width: 12),
+                // Dikey çizgi
+                Container(
+                  width: 1,
+                  height: 32,
+                  color: const Color(0xFFE2E8F0),
+                ),
+                const SizedBox(width: 12),
+                // Ayarlar ikonu
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.settings_outlined, size: 20),
+                  color: const Color(0xFF86868B),
+                  tooltip: 'Ayarlar',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Compact Sidebar
+  Widget _buildCompactSidebar() {
+    return Container(
+      width: 200,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'MODÜLLER',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF86868B),
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              itemCount: _menuItems.length,
+              itemBuilder: (context, index) {
+                final item = _menuItems[index];
+                final selected = _selectedMenuIndex == index;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _openModuleFromSidebar(index),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? item.color.withOpacity(0.1)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              item.icon,
+                              size: 18,
+                              color: selected
+                                  ? item.color
+                                  : const Color(0xFF86868B),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                item.label,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: selected
+                                      ? FontWeight.w600
+                                      : FontWeight.w500,
+                                  color: selected
+                                      ? item.color
+                                      : const Color(0xFF1D1D1F),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Main Content
+  Widget _buildMainContent(ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          if (_tabs.isNotEmpty) ...[
+            _buildPageHeader(),
+            _buildWorkspaceTabs(),
           ],
-        ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: _activeTabId == null
+                  ? _buildWelcomeScreen()
+                  : AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 260),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (child, animation) {
+                        final offsetAnimation = Tween<Offset>(
+                          begin: const Offset(0.02, 0),
+                          end: Offset.zero,
+                        ).animate(animation);
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: offsetAnimation,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: KeyedSubtree(
+                        key: ValueKey(_activeTabId),
+                        child: _tabs
+                            .firstWhere((t) => t.id == _activeTabId)
+                            .builder(context),
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Footer
+  Widget _buildBottomFooter() {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          const Text(
+            'Eksen ERP Pro Edition',
+            style: TextStyle(
+              fontSize: 11,
+              color: Color(0xFF86868B),
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Text(
+            '© 2025',
+            style: TextStyle(
+              fontSize: 11,
+              color: Color(0xFF86868B),
+            ),
+          ),
+          const Spacer(),
+          const Text(
+            'Version 2.0.0',
+            style: TextStyle(
+              fontSize: 11,
+              color: Color(0xFF86868B),
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Text(
+            'Build 1025-12/21',
+            style: TextStyle(
+              fontSize: 11,
+              color: Color(0xFF86868B),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: Color(0xFF34C759),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 6),
+          const Text(
+            'Aktif ve Bağlı',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF34C759),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1628,7 +2051,7 @@ class _ERPlusShellState extends State<ERPlusShell> {
 
   Widget _buildSidebarPanel() {
     return Container(
-      width: 280, // Biraz daha geniş
+      width: 360,
       padding: const EdgeInsets.all(12),
       child: Container(
         decoration: BoxDecoration(
@@ -2195,7 +2618,8 @@ class _SidebarFooter extends StatelessWidget {
 class _MenuItem {
   final IconData icon;
   final String label;
-  const _MenuItem(this.icon, this.label);
+  final Color color;
+  const _MenuItem(this.icon, this.label, this.color);
 }
 
 class _PlaceholderPage extends StatelessWidget {

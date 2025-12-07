@@ -10,11 +10,13 @@ import 'providers/customer_provider.dart';
 class CustomerCardPage extends StatefulWidget {
   final VoidCallback onClose;
   final String? customerId;
+  final bool isDarkMode;
 
   const CustomerCardPage({
     super.key,
     required this.onClose,
     this.customerId,
+    this.isDarkMode = false,
   });
 
   @override
@@ -30,37 +32,37 @@ class _CustomerCardPageState extends State<CustomerCardPage>
     _TabItem(
       icon: Icons.person_outline_rounded,
       label: 'Genel',
-      activeColor: Color(0xFF007AFF),
+      activeColor: Color(0xFF2C5282),
     ),
     _TabItem(
       icon: Icons.location_on_outlined,
       label: 'Adresler',
-      activeColor: Color(0xFF34C759),
+      activeColor: Color(0xFF2C5282),
     ),
     _TabItem(
       icon: Icons.receipt_long_outlined,
       label: 'Vergi',
-      activeColor: Color(0xFF5856D6),
+      activeColor: Color(0xFF2C5282),
     ),
     _TabItem(
       icon: Icons.shopping_bag_outlined,
       label: 'Satış',
-      activeColor: Color(0xFFFF9500),
+      activeColor: Color(0xFF2C5282),
     ),
     _TabItem(
       icon: Icons.account_balance_outlined,
       label: 'Finans',
-      activeColor: Color(0xFFFF3B30),
+      activeColor: Color(0xFF2C5282),
     ),
     _TabItem(
       icon: Icons.analytics_outlined,
       label: 'Muhasebe',
-      activeColor: Color(0xFFAF52DE),
+      activeColor: Color(0xFF2C5282),
     ),
     _TabItem(
       icon: Icons.description_outlined,
       label: 'Notlar',
-      activeColor: Color(0xFF32ADE6),
+      activeColor: Color(0xFF2C5282),
     ),
   ];
 
@@ -1211,14 +1213,28 @@ class _CustomerCardPageState extends State<CustomerCardPage>
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: widget.isDarkMode
+              ? [
+                  Color(0xFF1E293B),
+                  Color(0xFF0F172A),
+                ]
+              : [
+                  Color(0xFFF8FAFC),
+                  Color(0xFFEDF2F7),
+                ],
+        ),
+      ),
       child: Column(
         children: [
-          _buildUltraPremiumTabBar(),
-          const Divider(height: 1, thickness: 0.5, color: Color(0xFFE5E5EA)),
+          _buildCorporateHeader(),
+          _buildCorporateTabBar(),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: _buildTabContent(),
             ),
           ),
@@ -1227,129 +1243,152 @@ class _CustomerCardPageState extends State<CustomerCardPage>
     );
   }
 
-  Widget _buildUltraPremiumTabBar() {
+  // Kurumsal Header
+  Widget _buildCorporateHeader() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(32, 24, 32, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: widget.isDarkMode ? Color(0xFF1E293B) : Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(widget.isDarkMode ? 0.3 : 0.05),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
         children: [
-          // Title row
+          // Breadcrumb
           Row(
             children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeOutCubic,
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      _tabs[_currentTabIndex].activeColor,
-                      _tabs[_currentTabIndex].activeColor.withOpacity(0.6),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color:
-                          _tabs[_currentTabIndex].activeColor.withOpacity(0.25),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  _tabs[_currentTabIndex].icon,
-                  color: Colors.white,
-                  size: 24,
+              Icon(
+                Icons.home_outlined,
+                size: 16,
+                color:
+                    widget.isDarkMode ? Color(0xFF94A3B8) : Color(0xFF718096),
+              ),
+              SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                size: 14,
+                color:
+                    widget.isDarkMode ? Color(0xFF475569) : Color(0xFFCBD5E0),
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Cari Hesap Yönetimi',
+                style: TextStyle(
+                  fontSize: 13,
+                  color:
+                      widget.isDarkMode ? Color(0xFF94A3B8) : Color(0xFF718096),
+                  fontWeight: FontWeight.w400,
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Müşteri Kartı',
-                      style: TextStyle(
-                        fontFamily: '.SF Pro Display',
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1C1C1E),
-                        letterSpacing: -0.6,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.customerId ?? 'Yeni Kayıt',
-                      style: const TextStyle(
-                        fontFamily: '.SF Pro Display',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF8E8E93),
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                  ],
+              SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                size: 14,
+                color:
+                    widget.isDarkMode ? Color(0xFF475569) : Color(0xFFCBD5E0),
+              ),
+              SizedBox(width: 8),
+              Text(
+                widget.customerId != null ? 'Düzenle' : 'Yeni Kayıt',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: widget.isDarkMode ? Colors.white : Color(0xFF2D3748),
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              _buildActionButton(Icons.close_rounded, widget.onClose),
             ],
           ),
-          const SizedBox(height: 24),
-          // Cam efektli (glassmorphism) sekme tasarımı
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withOpacity(0.7),
-                      Colors.white.withOpacity(0.5),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 24,
-                      offset: const Offset(0, 12),
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  children: List.generate(_tabs.length, (index) {
-                    return Expanded(
-                      child: _buildModernTab(index),
-                    );
-                  }),
-                ),
-              ),
-            ),
+          Spacer(),
+          // Action Buttons
+          _buildHeaderButton(
+            'Kaydet',
+            Icons.save_outlined,
+            Color(0xFF2C5282),
+            true,
+          ),
+          SizedBox(width: 8),
+          _buildHeaderButton(
+            'Vazgeç',
+            Icons.close_rounded,
+            Color(0xFF718096),
+            false,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildModernTab(int index) {
+  Widget _buildHeaderButton(
+      String label, IconData icon, Color color, bool isPrimary) {
+    return Material(
+      color: isPrimary ? color : Colors.white,
+      borderRadius: BorderRadius.circular(6),
+      child: InkWell(
+        onTap: isPrimary ? _saveCustomer : widget.onClose,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isPrimary ? color : Color(0xFFE2E8F0),
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isPrimary ? Colors.white : color,
+              ),
+              SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: isPrimary ? Colors.white : color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Kurumsal Tab Bar
+  Widget _buildCorporateTabBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: widget.isDarkMode ? Color(0xFF1E293B) : Colors.white,
+        border: Border(
+          bottom: BorderSide(
+            color: widget.isDarkMode ? Color(0xFF334155) : Color(0xFFE2E8F0),
+            width: 1,
+          ),
+        ),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: 24),
+        child: Row(
+          children: List.generate(_tabs.length, (index) {
+            return _buildCorporateTab(index);
+          }),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCorporateTab(int index) {
     final isActive = index == _currentTabIndex;
     final tab = _tabs[index];
 
@@ -1357,133 +1396,68 @@ class _CustomerCardPageState extends State<CustomerCardPage>
       onTap: () {
         _tabController.animateTo(index);
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeInOutCubic,
-        margin: const EdgeInsets.symmetric(horizontal: 3),
+      child: Container(
+        margin: EdgeInsets.only(right: 8),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          gradient: isActive
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white,
-                    const Color(0xFFFFFFFE),
-                  ],
-                )
-              : null,
-          borderRadius: BorderRadius.circular(14),
-          border: isActive
-              ? Border.all(
-                  color: tab.activeColor.withOpacity(0.2),
-                  width: 1.5,
-                )
-              : null,
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: tab.activeColor.withOpacity(0.15),
-                    blurRadius: 20,
-                    spreadRadius: 0,
-                    offset: const Offset(0, 6),
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
+          border: Border(
+            bottom: BorderSide(
+              color: isActive ? Color(0xFF2C5282) : Colors.transparent,
+              width: 3,
+            ),
+          ),
         ),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 3),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 350),
-                curve: Curves.easeInOutCubic,
-                padding: EdgeInsets.all(isActive ? 5 : 4),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? tab.activeColor.withOpacity(0.1)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  tab.icon,
-                  size: isActive ? 16 : 15,
-                  color: isActive ? tab.activeColor : const Color(0xFF8B92A0),
-                ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? Color(0xFF2C5282).withOpacity(0.1)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(4),
               ),
-              const SizedBox(height: 2),
-              Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 1),
-                  child: AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 350),
-                    curve: Curves.easeInOutCubic,
-                    style: TextStyle(
-                      fontFamily: '.SF Pro Display',
-                      fontSize: isActive ? 9.5 : 9,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                      color:
-                          isActive ? tab.activeColor : const Color(0xFF8B92A0),
-                      letterSpacing: isActive ? -0.1 : 0,
-                      height: 1.0,
-                    ),
-                    child: Text(
-                      tab.label,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
+              child: Icon(
+                tab.icon,
+                size: 16,
+                color: isActive
+                    ? Color(0xFF2C5282)
+                    : (widget.isDarkMode
+                        ? Color(0xFF94A3B8)
+                        : Color(0xFF718096)),
               ),
-            ],
-          ),
+            ),
+            SizedBox(width: 8),
+            Text(
+              tab.label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                color: isActive
+                    ? Color(0xFF2C5282)
+                    : (widget.isDarkMode
+                        ? Color(0xFF94A3B8)
+                        : Color(0xFF718096)),
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
+  Widget _buildModernTab(int index) {
+    return _buildCorporateTab(index);
+  }
+
   Widget _buildActionButton(IconData icon, VoidCallback onTap) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF2F2F7),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: const Color(0xFFE5E5EA),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Icon(
-            icon,
-            size: 22,
-            color: const Color(0xFF8E8E93),
-          ),
-        ),
-      ),
+    return IconButton(
+      icon: Icon(icon, size: 20),
+      color: Color(0xFF718096),
+      onPressed: onTap,
+      tooltip: 'Kapat',
     );
   }
 
